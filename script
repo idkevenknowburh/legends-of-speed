@@ -1,207 +1,746 @@
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- ============================================
+-- Legends of Speed | Sheitsa Hub V2
+-- Custom Dark AMOLED UI
+-- ============================================
 
-local Window = Rayfield:CreateWindow({
-   Name = "⚡Legends of Speed | OP V.20",
-   Icon = nil, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "⚡Legends of Speed | OP V.20",
-   LoadingSubtitle = "by Superior's Hub",
-   Theme = "DarkBlue", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local RS = game:GetService("ReplicatedStorage")
+local CoreGui = game:GetService("CoreGui")
+local player = Players.LocalPlayer
+local DiscordLink = "https://discord.gg/ZE6vyxgydK"
 
-   DisableRayfieldPrompts = false,
-   DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
-
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = nil, -- Create a custom folder for your hub/game
-      FileName = "Big Hub"
-   },
-
-   Discord = {
-      Enabled = false, -- Prompt the user to join your Discord server if their executor supports it
-      Invite = "noinvitelink", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
-      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
-   },
-
-   KeySystem = false, -- Set this to true to use our key system
-   KeySettings = {
-      Title = "Untitled",
-      Subtitle = "Key System",
-      Note = "No method of obtaining the key is provided", -- Use this to tell the user how to get a key
-      FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
-      SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
-      GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
-      Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
-   }
-})
-
-local MainTab = Window:CreateTab("🏘️Home", 4483362458) -- Title, Imagev
-local PetsTab = Window:CreateTab("🐱(OP) Pets", 4483362458) -- Title, Image
-local TeleportsTab = Window:CreateTab("📲Teleports", 4483362458) -- Title, Image
-local ExtraTab = Window:CreateTab("📜Extra", 4483362458) -- Title, Image
-local MainSection = MainTab:CreateSection("Auto-Farm")
-local PetsSection = PetsTab:CreateSection("Get Pets (OP)")
-local TeleportsSection = TeleportsTab:CreateSection("Islands")
-local ExtraSection = ExtraTab:CreateSection("Other")
-
-local OrbsToggle = MainTab:CreateToggle({
-   Name = "Auto Orbs",
-   CurrentValue = false,
-   Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(Value)
-   wait(1)
-	_G.Farm1 = true
-
-	while _G.Farm1 == true do wait()
-		for i,v in pairs(game.Workspace.orbFolder.City:GetChildren()) do
-			if v.Name ~= "Gem" then
-				v.outerOrb.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
-			end
-		end
-	end
-   end,
-})
-
-local OrangeOrbsToggle = MainTab:CreateToggle({
-   Name = "Auto Steps",
-   CurrentValue = false,
-   Flag = "Toggle2", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(Value)
-  game:GetService("ReplicatedStorage").rEvents.orbEvent:FireServer(unpack(tbl_main))
-
-local tbl_main = 
-{
-      "collectOrb", 
-      "Orange Orb", 
-      "City"
+-- ========== THEME ==========
+local C = {
+    BG            = Color3.fromRGB(8, 8, 12),
+    BG2           = Color3.fromRGB(12, 12, 18),
+    Card          = Color3.fromRGB(18, 18, 26),
+    CardHover     = Color3.fromRGB(24, 24, 34),
+    Header        = Color3.fromRGB(14, 14, 20),
+    HeaderLine    = Color3.fromRGB(28, 28, 40),
+    Text          = Color3.fromRGB(230, 230, 238),
+    Sub           = Color3.fromRGB(120, 120, 140),
+    Accent        = Color3.fromRGB(80, 200, 130),
+    AccentDim     = Color3.fromRGB(40, 100, 65),
+    AccentHover   = Color3.fromRGB(95, 215, 145),
+    Border        = Color3.fromRGB(30, 30, 42),
+    BorderLight   = Color3.fromRGB(40, 40, 55),
+    Close         = Color3.fromRGB(200, 55, 55),
+    CloseHover    = Color3.fromRGB(225, 75, 75),
+    Discord       = Color3.fromRGB(88, 101, 242),
+    DiscordHover  = Color3.fromRGB(105, 118, 255),
+    TabActive     = Color3.fromRGB(80, 200, 130),
+    TabInactive   = Color3.fromRGB(18, 18, 26),
+    SectionLabel  = Color3.fromRGB(255, 100, 70),
+    InputBG       = Color3.fromRGB(6, 6, 10),
+    DDBg          = Color3.fromRGB(12, 12, 18),
+    DDHover       = Color3.fromRGB(22, 22, 32),
+    ToggleOn      = Color3.fromRGB(80, 200, 130),
+    ToggleOff     = Color3.fromRGB(40, 40, 55),
+    Black         = Color3.fromRGB(4, 4, 4),
+    White         = Color3.fromRGB(255, 255, 255),
 }
-   end,
-})
 
-local RebirthsToggle = MainTab:CreateToggle({
-   Name = "Auto Rebirths",
-   CurrentValue = false,
-   Flag = "Toggle3", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(Value)
-   wait(1)
-	_G.Rebirth = true
+-- ========== FARM STATE ==========
+local farmThreads = {}
 
-	while _G.Rebirth == true do wait(5)
-		local tbl_main = 
-			{
-				"rebirthRequest"
-			}
-		game:GetService("ReplicatedStorage").rEvents.rebirthEvent:FireServer(unpack(tbl_main))
-	end
-   end,
-})
-
-local GemsToggle = MainTab:CreateToggle({
-   Name = "Auto Gems",
-   CurrentValue = false,
-   Flag = "Toggle4", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(Value)
-   wait(1)
-	_G.Farm2 = true
-
-	while _G.Farm2 == true do wait()
-		for i,v in pairs(game.Workspace.orbFolder.City:GetChildren()) do
-			if v.Name == "Gem" then
-				v.outerGem.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
-			end
-		end
-	end
-   end,
-})
-
-local HoopsToggle = MainTab:CreateToggle({
-   Name = "Auto Hoops",
-   CurrentValue = false,
-   Flag = "Toggle5", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(Value)
-  wait(1)
-_G.Farm3 = true
-
-while _G.Farm3 == true do wait()
-for i,v in pairs(game.Workspace.Hoops:GetChildren()) do
-v.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+local function stopFarm(name)
+    if farmThreads[name] then
+        farmThreads[name] = false
+        farmThreads[name] = nil
+    end
 end
-end
-   end,
-})
 
-local PetsButton = PetsTab:CreateButton({
-   Name = "Inf Glitch Pet (Must have level 1 pet & WORKS IN SERVER)",
-   Callback = function()
-   spawn(function()
-    while wait() do
-        game:GetService("ReplicatedStorage").rEvents.rebirthEvent:FireServer("rebirthRequest")
+local function isFarming(name)
+    return farmThreads[name] == true
+end
+
+-- ========== HELPERS ==========
+local function new(class, props, parent)
+    local inst = Instance.new(class)
+    for k, v in pairs(props) do inst[k] = v end
+    if parent then inst.Parent = parent end
+    return inst
+end
+local function corner(inst, r) return new("UICorner", {CornerRadius = UDim.new(0, r or 10)}, inst) end
+local function stroke(inst, c, t) return new("UIStroke", {Color = c or C.Border, Thickness = t or 1}, inst) end
+local function tw(inst, props, dur, style, dir)
+    TweenService:Create(inst, TweenInfo.new(dur or 0.3, style or Enum.EasingStyle.Quad, dir or Enum.EasingDirection.Out), props):Play()
+end
+local function clamp(v, lo, hi) return math.max(lo, math.min(hi, v)) end
+
+-- ========== SCREEN GUI ==========
+local gui = new("ScreenGui", {
+    Name = "LoS_SheitsaHub",
+    ResetOnSpawn = false,
+    ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+}, CoreGui)
+
+-- ========== MAIN FRAME ==========
+local main = new("Frame", {
+    Name = "Main",
+    Size = UDim2.new(0, 0, 0, 0),
+    Position = UDim2.new(0.5, -200, 0.5, -250),
+    BackgroundColor3 = C.BG,
+    BackgroundTransparency = 0.03,
+    BorderSizePixel = 0,
+}, gui)
+corner(main, 14)
+stroke(main, C.BorderLight, 1)
+
+task.defer(function()
+    tw(main, {Size = UDim2.new(0, 420, 0, 500)}, 0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+end)
+
+-- ========== HEADER ==========
+local header = new("Frame", {
+    Size = UDim2.new(1, 0, 0, 52),
+    BackgroundColor3 = C.Header,
+    BorderSizePixel = 0,
+}, main)
+corner(header, 14)
+new("Frame", {Size = UDim2.new(1, 0, 0, 14), Position = UDim2.new(0, 0, 1, -14), BackgroundColor3 = C.Header, BorderSizePixel = 0}, header)
+new("Frame", {Size = UDim2.new(1, 0, 0, 1.5), Position = UDim2.new(0, 0, 1, -1.5), BackgroundColor3 = C.Border, BorderSizePixel = 0}, header)
+
+new("TextLabel", {
+    Text = "Legends of Speed",
+    Size = UDim2.new(1, -80, 0.52, 0), Position = UDim2.new(0, 16, 0, 0),
+    BackgroundTransparency = 1, TextColor3 = C.Text, TextSize = 14.5,
+    Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd,
+}, header)
+
+new("TextLabel", {
+    Text = "Sheitsa Hub V2", Size = UDim2.new(1, -80, 0.42, 0), Position = UDim2.new(0, 16, 0.55, 0),
+    BackgroundTransparency = 1, TextColor3 = C.Sub, TextSize = 10.5,
+    Font = Enum.Font.GothamMedium, TextXAlignment = Enum.TextXAlignment.Left,
+}, header)
+
+-- Minimize Button
+local minBtn = new("TextButton", {
+    Size = UDim2.new(0, 28, 0, 28), Position = UDim2.new(1, -66, 0, 12),
+    BackgroundColor3 = C.Card, Text = "\226\128\148", TextColor3 = C.Sub, TextSize = 18,
+    Font = Enum.Font.GothamBold, BorderSizePixel = 0, AutoButtonColor = false,
+}, header)
+corner(minBtn, 7)
+minBtn.MouseEnter:Connect(function() tw(minBtn, {BackgroundColor3 = C.CardHover}, 0.15) end)
+minBtn.MouseLeave:Connect(function() tw(minBtn, {BackgroundColor3 = C.Card}, 0.15) end)
+
+-- Close Button
+local closeBtn = new("TextButton", {
+    Size = UDim2.new(0, 28, 0, 28), Position = UDim2.new(1, -34, 0, 12),
+    BackgroundColor3 = C.Close, Text = "\226\156\156", TextColor3 = C.White, TextSize = 14,
+    Font = Enum.Font.GothamBold, BorderSizePixel = 0, AutoButtonColor = false,
+}, header)
+corner(closeBtn, 7)
+closeBtn.MouseEnter:Connect(function() tw(closeBtn, {BackgroundColor3 = C.CloseHover}, 0.15) end)
+closeBtn.MouseLeave:Connect(function() tw(closeBtn, {BackgroundColor3 = C.Close}, 0.15) end)
+
+-- ========== TAB NAVIGATION ==========
+local tabNav = new("Frame", {
+    Size = UDim2.new(1, 0, 0, 42),
+    Position = UDim2.new(0, 0, 0, 52),
+    BackgroundColor3 = C.BG2,
+    BorderSizePixel = 0,
+}, main)
+
+local tabNames = {"Home", "Pets", "Teleports", "Extra"}
+local tabButtons = {}
+local tabCount = #tabNames
+
+for i, name in ipairs(tabNames) do
+    local isActive = (i == 1)
+    local btn = new("TextButton", {
+        Size = UDim2.new(1 / tabCount, 0, 1, 0),
+        Position = UDim2.new((i - 1) / tabCount, 0, 0, 0),
+        BackgroundColor3 = isActive and C.TabActive or C.TabInactive,
+        Text = name,
+        TextColor3 = isActive and C.Black or C.Sub,
+        TextSize = 12,
+        Font = Enum.Font.GothamSemibold,
+        BorderSizePixel = 0,
+        AutoButtonColor = false,
+    }, tabNav)
+    if isActive then
+        new("Frame", {
+            Size = UDim2.new(0.4, 0, 0, 2.5), Position = UDim2.new(0.3, 0, 1, -2.5),
+            BackgroundColor3 = C.Black, BorderSizePixel = 0,
+        }, btn)
+    end
+    btn.MouseEnter:Connect(function()
+        if not isActive then tw(btn, {BackgroundColor3 = C.CardHover}, 0.15) end
+    end)
+    btn.MouseLeave:Connect(function()
+        if not isActive then tw(btn, {BackgroundColor3 = C.TabInactive}, 0.15) end
+    end)
+    tabButtons[name] = btn
+end
+
+-- ========== CONTENT AREA ==========
+local contentArea = new("Frame", {
+    Size = UDim2.new(1, -20, 1, -108),
+    Position = UDim2.new(0, 10, 0, 98),
+    BackgroundTransparency = 1,
+    ClipsDescendants = true,
+}, main)
+
+local tabFrames = {}
+for _, name in ipairs(tabNames) do
+    local scroll = new("ScrollingFrame", {
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1, BorderSizePixel = 0,
+        ScrollBarThickness = 3, ScrollBarImageColor3 = Color3.fromRGB(50, 50, 65),
+        CanvasSize = UDim2.new(0, 0, 0, 0), AutomaticCanvasSize = Enum.AutomaticSize.Y,
+        Visible = (name == "Home"),
+    }, contentArea)
+    new("UIPadding", {PaddingTop = UDim.new(0, 8), PaddingBottom = UDim.new(0, 10), PaddingLeft = UDim.new(0, 4), PaddingRight = UDim.new(0, 4)}, scroll)
+    new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 8)}, scroll)
+    tabFrames[name] = scroll
+end
+
+-- ========== STATUS BAR ==========
+new("Frame", {
+    Size = UDim2.new(1, 0, 0, 26),
+    Position = UDim2.new(0, 0, 1, -26),
+    BackgroundColor3 = C.Header,
+    BorderSizePixel = 0,
+}, main)
+new("TextLabel", {
+    Text = "Sheitsa Hub V2  |  Legends of Speed",
+    Size = UDim2.new(1, -16, 0, 26), Position = UDim2.new(0, 8, 1, -26),
+    BackgroundTransparency = 1, TextColor3 = C.Sub, TextSize = 9.5,
+    Font = Enum.Font.GothamMedium, TextXAlignment = Enum.TextXAlignment.Left,
+}, main)
+
+-- ========== COMPONENTS ==========
+local function makeSection(parent, text, order)
+    new("TextLabel", {
+        Text = text, Size = UDim2.new(1, 0, 0, 22), BackgroundTransparency = 1,
+        TextColor3 = C.SectionLabel, TextSize = 11.5, Font = Enum.Font.GothamBold,
+        TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = order or 0,
+    }, parent)
+end
+
+local function makeButton(parent, text, bgColor, hoverColor, order, cb)
+    local wrap = new("Frame", {
+        Size = UDim2.new(1, 0, 0, 42), BackgroundColor3 = bgColor,
+        BorderSizePixel = 0, LayoutOrder = order or 0,
+    }, parent)
+    corner(wrap, 10)
+    stroke(wrap, C.BorderLight, 1)
+    local btn = new("TextButton", {
+        Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1,
+        Text = text, TextColor3 = C.Black, TextSize = 13.5,
+        Font = Enum.Font.GothamSemibold, BorderSizePixel = 0, AutoButtonColor = false,
+    }, wrap)
+    wrap.MouseEnter:Connect(function() tw(wrap, {BackgroundColor3 = hoverColor}, 0.2) end)
+    wrap.MouseLeave:Connect(function() tw(wrap, {BackgroundColor3 = bgColor}, 0.2) end)
+    if cb then btn.MouseButton1Click:Connect(cb) end
+    return wrap, btn
+end
+
+local function makeDropdown(parent, label, options, default, order)
+    local wrap = new("Frame", {
+        Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1,
+        AutomaticSize = Enum.AutomaticSize.Y, LayoutOrder = order or 0,
+    }, parent)
+    new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 5)}, wrap)
+    new("TextLabel", {
+        Text = label, Size = UDim2.new(1, 0, 0, 16), BackgroundTransparency = 1,
+        TextColor3 = C.Sub, TextSize = 11, Font = Enum.Font.GothamMedium,
+        TextXAlignment = Enum.TextXAlignment.Left,
+    }, wrap)
+    local selected = default or options[1]
+    local isOpen = false
+    local selectWrap = new("Frame", {
+        Size = UDim2.new(1, 0, 0, 36), BackgroundColor3 = C.InputBG, BorderSizePixel = 0,
+    }, wrap)
+    corner(selectWrap, 9)
+    stroke(selectWrap, C.Border, 1)
+    local selectBtn = new("TextButton", {
+        Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1,
+        Text = "  \226\149\190  " .. selected, TextColor3 = C.Text,
+        TextSize = 12.5, Font = Enum.Font.Gotham, BorderSizePixel = 0,
+        TextXAlignment = Enum.TextXAlignment.Left, AutoButtonColor = false,
+    }, selectWrap)
+    local listFrame = new("Frame", {
+        Size = UDim2.new(1, 0, 0, 0), BackgroundColor3 = C.DDBg,
+        BorderSizePixel = 0, ClipsDescendants = true, ZIndex = 5,
+    }, wrap)
+    corner(listFrame, 9)
+    stroke(listFrame, C.Border, 1)
+    new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder}, listFrame)
+    for i, opt in ipairs(options) do
+        local oBtn = new("TextButton", {
+            Size = UDim2.new(1, 0, 0, 32), BackgroundColor3 = C.DDBg,
+            Text = "   " .. opt, TextColor3 = C.Text, TextSize = 12,
+            Font = Enum.Font.Gotham, BorderSizePixel = 0,
+            TextXAlignment = Enum.TextXAlignment.Left, AutoButtonColor = false,
+            LayoutOrder = i, ZIndex = 5,
+        }, listFrame)
+        oBtn.MouseEnter:Connect(function() tw(oBtn, {BackgroundColor3 = C.DDHover}, 0.12) end)
+        oBtn.MouseLeave:Connect(function() tw(oBtn, {BackgroundColor3 = C.DDBg}, 0.12) end)
+        oBtn.MouseButton1Click:Connect(function()
+            selected = opt; selectBtn.Text = "  \226\149\190  " .. opt; isOpen = false
+            tw(listFrame, {Size = UDim2.new(1, 0, 0, 0)}, 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+        end)
+    end
+    selectBtn.MouseButton1Click:Connect(function()
+        isOpen = not isOpen
+        tw(listFrame, {Size = UDim2.new(1, 0, 0, isOpen and (#options * 32 + 4) or 0)}, 0.2)
+    end)
+    return { Get = function() return selected end }
+end
+
+local function makeToggle(parent, label, defaultOn, order, callback)
+    local wrap = new("Frame", {
+        Size = UDim2.new(1, 0, 0, 44), BackgroundColor3 = C.Card,
+        BorderSizePixel = 0, LayoutOrder = order or 0,
+    }, parent)
+    corner(wrap, 10)
+    stroke(wrap, C.Border, 1)
+    new("TextLabel", {
+        Text = "  " .. label, Size = UDim2.new(1, -64, 1, 0), BackgroundTransparency = 1,
+        TextColor3 = defaultOn and C.White or C.Sub, TextSize = 13,
+        Font = Enum.Font.GothamMedium, TextXAlignment = Enum.TextXAlignment.Left,
+    }, wrap)
+    local toggleBg = new("Frame", {
+        Size = UDim2.new(0, 44, 0, 24), Position = UDim2.new(1, -54, 0.5, -12),
+        BackgroundColor3 = defaultOn and C.ToggleOn or C.ToggleOff, BorderSizePixel = 0,
+    }, wrap)
+    corner(toggleBg, 12)
+    local dot = new("Frame", {
+        Size = UDim2.new(0, 18, 0, 18),
+        Position = defaultOn and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9),
+        BackgroundColor3 = C.White, BorderSizePixel = 0,
+    }, toggleBg)
+    corner(dot, 9)
+    local on = defaultOn
+    local btn = new("TextButton", {
+        Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1,
+        Text = "", AutoButtonColor = false,
+    }, wrap)
+    wrap.MouseEnter:Connect(function() tw(wrap, {BackgroundColor3 = C.CardHover}, 0.15) end)
+    wrap.MouseLeave:Connect(function() tw(wrap, {BackgroundColor3 = C.Card}, 0.15) end)
+    btn.MouseButton1Click:Connect(function()
+        on = not on
+        tw(dot, {Position = on and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9)}, 0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        tw(toggleBg, {BackgroundColor3 = on and C.ToggleOn or C.ToggleOff}, 0.25)
+        for _, child in ipairs(wrap:GetChildren()) do
+            if child:IsA("TextLabel") then
+                tw(child, {TextColor3 = on and C.White or C.Sub}, 0.2)
+            end
+        end
+        if callback then callback(on) end
+    end)
+    return { IsOn = function() return on end, SetOn = function(v) on = v; callback(v) end }
+end
+
+-- ========== TAB 1: HOME ==========
+local homeTab = tabFrames["Home"]
+
+makeSection(homeTab, "-- Auto-Farm", 0)
+
+-- Auto Orbs
+makeToggle(homeTab, "Auto Orbs", false, 1, function(on)
+    stopFarm("orbs")
+    if on then
+        farmThreads["orbs"] = true
+        spawn(function()
+            task.wait(1)
+            while farmThreads["orbs"] do
+                task.wait()
+                local char = player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    local hrp = char.HumanoidRootPart
+                    local orbFolder = workspace:FindFirstChild("orbFolder")
+                    if orbFolder then
+                        local city = orbFolder:FindFirstChild("City")
+                        if city then
+                            for _, v in pairs(city:GetChildren()) do
+                                if farmThreads["orbs"] and v.Name ~= "Gem" and v:FindFirstChild("outerOrb") then
+                                    v.outerOrb.CFrame = hrp.CFrame
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end)
     end
 end)
 
-while wait(0.1) do
-local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) local A_1 = "collectOrb" local A_2 = "Yellow Orb" local A_3 = "City" local Event = game:GetService("ReplicatedStorage").rEvents.orbEvent Event:FireServer(A_1, A_2, A_3) 
-end
-   end,
-})
+-- Auto Steps
+makeToggle(homeTab, "Auto Steps", false, 2, function(on)
+    stopFarm("steps")
+    if on then
+        farmThreads["steps"] = true
+        spawn(function()
+            task.wait(1)
+            while farmThreads["steps"] do
+                task.wait(0.5)
+                if farmThreads["steps"] then
+                    local args = {"collectOrb", "Orange Orb", "City"}
+                    local orbEvent = RS:FindFirstChild("rEvents")
+                    if orbEvent then
+                        local ev = orbEvent:FindFirstChild("orbEvent")
+                        if ev then ev:FireServer(unpack(args)) end
+                    end
+                end
+            end
+        end)
+    end
+end)
 
-local PetsButton2 = PetsTab:CreateButton({
-   Name = "Unlock Swift Samurai (HAVE 100M+ GEMS)",
-   Callback = function()
-   local args = {
-    [1] = game:GetService("ReplicatedStorage").cPetShopFolder:FindFirstChild("Swift Samurai")
+-- Auto Rebirths
+makeToggle(homeTab, "Auto Rebirths", false, 3, function(on)
+    stopFarm("rebirths")
+    if on then
+        farmThreads["rebirths"] = true
+        spawn(function()
+            task.wait(1)
+            while farmThreads["rebirths"] do
+                task.wait(5)
+                if farmThreads["rebirths"] then
+                    local rEvents = RS:FindFirstChild("rEvents")
+                    if rEvents then
+                        local ev = rEvents:FindFirstChild("rebirthEvent")
+                        if ev then ev:FireServer("rebirthRequest") end
+                    end
+                end
+            end
+        end)
+    end
+end)
+
+-- Auto Gems
+makeToggle(homeTab, "Auto Gems", false, 4, function(on)
+    stopFarm("gems")
+    if on then
+        farmThreads["gems"] = true
+        spawn(function()
+            task.wait(1)
+            while farmThreads["gems"] do
+                task.wait()
+                local char = player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    local hrp = char.HumanoidRootPart
+                    local orbFolder = workspace:FindFirstChild("orbFolder")
+                    if orbFolder then
+                        local city = orbFolder:FindFirstChild("City")
+                        if city then
+                            for _, v in pairs(city:GetChildren()) do
+                                if farmThreads["gems"] and v.Name == "Gem" and v:FindFirstChild("outerGem") then
+                                    v.outerGem.CFrame = hrp.CFrame
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end)
+    end
+end)
+
+-- Auto Hoops
+makeToggle(homeTab, "Auto Hoops", false, 5, function(on)
+    stopFarm("hoops")
+    if on then
+        farmThreads["hoops"] = true
+        spawn(function()
+            task.wait(1)
+            while farmThreads["hoops"] do
+                task.wait()
+                local char = player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    local hrp = char.HumanoidRootPart
+                    local hoops = workspace:FindFirstChild("Hoops")
+                    if hoops then
+                        for _, v in pairs(hoops:GetChildren()) do
+                            if farmThreads["hoops"] then
+                                v.CFrame = hrp.CFrame
+                            end
+                        end
+                    end
+                end
+            end
+        end)
+    end
+end)
+
+-- ========== TAB 2: PETS ==========
+local petsTab = tabFrames["Pets"]
+
+makeSection(petsTab, "-- OP Pets", 0)
+
+-- Inf Glitch Pet
+local glitchWrap, glitchBtn = makeButton(petsTab, "Inf Glitch Pet", C.SectionLabel, Color3.fromRGB(255, 115, 85), 1, function()
+    stopFarm("glitchPet")
+    farmThreads["glitchPet"] = true
+
+    -- Rebirth spam thread
+    spawn(function()
+        while farmThreads["glitchPet"] do
+            task.wait()
+            local rEvents = RS:FindFirstChild("rEvents")
+            if rEvents then
+                local ev = rEvents:FindFirstChild("rebirthEvent")
+                if ev then ev:FireServer("rebirthRequest") end
+            end
+        end
+    end)
+
+    -- Yellow orb spam thread
+    spawn(function()
+        while farmThreads["glitchPet"] do
+            task.wait(0.1)
+            if farmThreads["glitchPet"] then
+                local rEvents = RS:FindFirstChild("rEvents")
+                if rEvents then
+                    local ev = rEvents:FindFirstChild("orbEvent")
+                    if ev then
+                        for _ = 1, 40 do
+                            if farmThreads["glitchPet"] then
+                                ev:FireServer("collectOrb", "Yellow Orb", "City")
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end)
+end)
+-- Fix text color for section button
+for _, child in ipairs(glitchWrap:GetChildren()) do
+    if child:IsA("TextButton") then child.TextColor3 = C.White end
+end
+
+-- Stop Glitch Pet button
+local stopWrap, stopBtn = makeButton(petsTab, "Stop Glitch Pet", C.Close, C.CloseHover, 2, function()
+    stopFarm("glitchPet")
+    stopBtn.Text = "Stopped!"
+    task.delay(1.5, function() stopBtn.Text = "Stop Glitch Pet" end)
+end)
+for _, child in ipairs(stopWrap:GetChildren()) do
+    if child:IsA("TextButton") then child.TextColor3 = C.White end
+end
+
+new("Frame", {Size = UDim2.new(1, 0, 0, 8), BackgroundTransparency = 1, LayoutOrder = 3}, petsTab)
+
+makeSection(petsTab, "-- Pet Shop", 4)
+
+-- Unlock Swift Samurai
+local samuraiWrap, samuraiBtn = makeButton(petsTab, "Unlock Swift Samurai", C.Discord, C.DiscordHover, 5, function()
+    local petShop = RS:FindFirstChild("cPetShopFolder")
+    local petShopRemote = RS:FindFirstChild("cPetShopRemote")
+    if petShop and petShopRemote then
+        local swiftSamurai = petShop:FindFirstChild("Swift Samurai")
+        if swiftSamurai then
+            petShopRemote:InvokeServer(swiftSamurai)
+            samuraiBtn.Text = "Done!"
+            task.delay(2, function() samuraiBtn.Text = "Unlock Swift Samurai" end)
+        else
+            samuraiBtn.Text = "Pet not found!"
+            task.delay(2, function() samuraiBtn.Text = "Unlock Swift Samurai" end)
+        end
+    else
+        samuraiBtn.Text = "Game not found!"
+        task.delay(2, function() samuraiBtn.Text = "Unlock Swift Samurai" end)
+    end
+end)
+for _, child in ipairs(samuraiWrap:GetChildren()) do
+    if child:IsA("TextButton") then child.TextColor3 = C.White end
+end
+
+-- ========== TAB 3: TELEPORTS ==========
+local teleTab = tabFrames["Teleports"]
+
+makeSection(teleTab, "-- Islands", 0)
+
+local teleports = {
+    {name = "Teleport to Main City",               cf = CFrame.new(-576.270142, 4.1662488, 410.038574, -0.998445749, -5.50801449e-09, 0.0557322279, -4.12241367e-13, 1, 9.88225892e-08, -0.0557322279, 9.86689699e-08, -0.998445749)},
+    {name = "Teleport to Snow City",               cf = CFrame.new(-488.590027, 4.1662488, 2301.04224, -0.499920726, 1.05356229e-07, -0.866071165, -2.12529863e-12, 1, 1.21649691e-07, 0.866071165, 6.08170438e-08, -0.499920726)},
+    {name = "Teleport to Magma City",              cf = CFrame.new(2345.34839, 4.1662488, 4393.5, 0.228262901, 1.14109731e-07, 0.973599553, -6.69713807e-12, 1, -1.17202404e-07, -0.973599553, 2.67464397e-08, 0.228262901)},
+    {name = "Teleport to Legends Speed Highway",    cf = CFrame.new(3709.70703, 71.7461929, 5593.875, -0.0438015647, -1.0088355e-08, -0.999040246, -2.20692842e-14, 1, -1.00980451e-08, 0.999040246, -4.42288151e-10, -0.0438015647)},
+    {name = "Teleport to Jungle Island City",      cf = CFrame.new(1681.85168, 3.14525414, 12818.3633, 0.456854314, 6.8587525e-08, -0.889541507, -2.31062192e-08, 1, 6.52373657e-08, 0.889541507, -9.25003008e-09, 0.456854314)},
 }
 
-game:GetService("ReplicatedStorage").cPetShopRemote:InvokeServer(unpack(args))
-   end,
-})
+for i, tp in ipairs(teleports) do
+    makeButton(teleTab, tp.name, C.Accent, C.AccentHover, i, function()
+        local char = player.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            char.HumanoidRootPart.CFrame = tp.cf
+        end
+    end)
+end
 
-local TeleportsButton1 = TeleportsTab:CreateButton({
-   Name = "Teleport to Main City",
-   Callback = function()
-   local rootPart = game.Players.LocalPlayer.Character.HumanoidRootPart
-rootPart.CFrame = CFrame.new(-576.270142, 4.1662488, 410.038574, -0.998445749, -5.50801449e-09, 0.0557322279, -4.12241367e-13, 1, 9.88225892e-08, -0.0557322279, 9.86689699e-08, -0.998445749)
-   end,
-})
+-- ========== TAB 4: EXTRA ==========
+local extraTab = tabFrames["Extra"]
 
-local TeleportsButton2 = TeleportsTab:CreateButton({
-   Name = "Teleport to Snow City",
-   Callback = function()
-   local rootPart = game.Players.LocalPlayer.Character.HumanoidRootPart
-rootPart.CFrame = CFrame.new(-488.590027, 4.1662488, 2301.04224, -0.499920726, 1.05356229e-07, -0.866071165, -2.12529863e-12, 1, 1.21649691e-07, 0.866071165, 6.08170438e-08, -0.499920726)
-   end,
-})
+makeSection(extraTab, "-- Info", 0)
 
-local TeleportsButton3 = TeleportsTab:CreateButton({
-   Name = "Teleport to Magma City",
-   Callback = function()
-   local rootPart = game.Players.LocalPlayer.Character.HumanoidRootPart
-rootPart.CFrame = CFrame.new(2345.34839, 4.1662488, 4393.5, 0.228262901, 1.14109731e-07, 0.973599553, -6.69713807e-12, 1, -1.17202404e-07, -0.973599553, 2.67464397e-08, 0.228262901)
-   end,
-})
+new("TextLabel", {
+    Text = "Legends of Speed", Size = UDim2.new(1, 0, 0, 28),
+    BackgroundTransparency = 1, TextColor3 = C.Text, TextSize = 17,
+    Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = 1,
+}, extraTab)
 
-local TeleportsButton4 = TeleportsTab:CreateButton({
-   Name = "Teleport to Legends Speed Highway City",
-   Callback = function()
-   local rootPart = game.Players.LocalPlayer.Character.HumanoidRootPart
-rootPart.CFrame = CFrame.new(3709.70703, 71.7461929, 5593.875, -0.0438015647, -1.0088355e-08, -0.999040246, -2.20692842e-14, 1, -1.00980451e-08, 0.999040246, -4.42288151e-10, -0.0438015647)
-   end,
-})
+new("TextLabel", {
+    Text = "Sheitsa Hub V2", Size = UDim2.new(1, 0, 0, 22),
+    BackgroundTransparency = 1, TextColor3 = C.Accent, TextSize = 13.5,
+    Font = Enum.Font.GothamSemibold, TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = 2,
+}, extraTab)
 
-local TeleportsButton5 = TeleportsTab:CreateButton({
-   Name = "Teleport to Jungle Island City",
-   Callback = function()
-   local rootPart = game.Players.LocalPlayer.Character.HumanoidRootPart
-rootPart.CFrame = CFrame.new(1681.85168, 3.14525414, 12818.3633, 0.456854314, 6.8587525e-08, -0.889541507, -2.31062192e-08, 1, 6.52373657e-08, 0.889541507, -9.25003008e-09, 0.456854314)
-   end,
-})
+new("Frame", {Size = UDim2.new(1, 0, 0, 1), BackgroundColor3 = C.Border, BorderSizePixel = 0, LayoutOrder = 3}, extraTab)
 
-local LoadButton = Tab:CreateButton({
-   Name = "Load Superior's Hub",
-   Callback = function()
-   loadstring(game:HttpGet(('https://raw.githubusercontent.com/idkevenknowburh/source/refs/heads/main/main1'),true))()
-   end,
-})
+new("TextLabel", {
+    Text = "Script converted to custom UI.\nOriginal by Superior's Hub, revamped\nby Sheitsa Dev Team.", Size = UDim2.new(1, 0, 0, 50),
+    BackgroundTransparency = 1, TextColor3 = C.Sub, TextSize = 12,
+    Font = Enum.Font.Gotham, TextXAlignment = Enum.TextXAlignment.Left,
+    TextWrapped = true, LayoutOrder = 4,
+}, extraTab)
 
-local ExtraLabel = ExtraTab:CreateLabel("Credits to Superior Hub For Making the Scripts!", 0, Color3.fromRGB(255, 255, 255), false) -- Title, Icon, Color, IgnoreTheme
+new("Frame", {Size = UDim2.new(1, 0, 0, 12), BackgroundTransparency = 1, LayoutOrder = 5}, extraTab)
 
-Rayfield:LoadConfiguration()
+local discWrap, discBtn = makeButton(extraTab, "Join our Discord", C.Discord, C.DiscordHover, 6, function()
+    pcall(setclipboard, DiscordLink)
+    discBtn.Text = "Link Copied!"
+    task.delay(2, function() discBtn.Text = "Join our Discord" end)
+end)
+for _, child in ipairs(discWrap:GetChildren()) do
+    if child:IsA("TextButton") then child.TextColor3 = C.White end
+end
+
+-- ========== TAB SWITCHING ==========
+local function switchTab(name)
+    for n, frame in pairs(tabFrames) do
+        if n == name then
+            frame.Visible = true
+            frame.BackgroundTransparency = 0.5
+            tw(frame, {BackgroundTransparency = 0}, 0.2)
+        else
+            frame.Visible = false
+        end
+    end
+    for n, btn in pairs(tabButtons) do
+        local active = (n == name)
+        tw(btn, {
+            BackgroundColor3 = active and C.TabActive or C.TabInactive,
+            TextColor3 = active and C.Black or C.Sub,
+        }, 0.25)
+    end
+end
+
+for name, btn in pairs(tabButtons) do
+    btn.MouseButton1Click:Connect(function() switchTab(name) end)
+end
+
+-- ========== MINIMIZE / CLOSE + TOGGLE BUTTON ==========
+local mainVisible = true
+
+local toggleGui = new("ScreenGui", {
+    Name = "LoS_Toggle",
+    ResetOnSpawn = false,
+    ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+}, CoreGui)
+
+local toggleBtn = new("TextButton", {
+    Size = UDim2.new(0, 44, 0, 44),
+    Position = UDim2.new(0.5, -22, 0, 14),
+    BackgroundColor3 = Color3.fromRGB(12, 12, 16),
+    Text = "",
+    BorderSizePixel = 0,
+    AutoButtonColor = false,
+    Visible = false,
+}, toggleGui)
+corner(toggleBtn, 11)
+local tStroke = Instance.new("UIStroke", toggleBtn)
+tStroke.Color = Color3.fromRGB(190, 190, 200)
+tStroke.Thickness = 1.5
+
+local tIcon = new("TextLabel", toggleBtn)
+tIcon.Size = UDim2.new(1, 0, 1, 0)
+tIcon.Text = "LS"
+tIcon.TextSize = 13
+tIcon.BackgroundTransparency = 1
+tIcon.TextColor3 = Color3.fromRGB(200, 200, 210)
+tIcon.Font = Enum.Font.GothamBold
+
+local function hideMain()
+    mainVisible = false
+    tw(main, {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}, 0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+    task.delay(0.3, function()
+        main.Visible = false
+        toggleBtn.Visible = true
+        tIcon.Text = "LS"
+        tStroke.Color = Color3.fromRGB(190, 190, 200)
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
+    end)
+end
+
+local function showMain()
+    mainVisible = true
+    toggleBtn.Visible = false
+    main.Visible = true
+    main.Size = UDim2.new(0, 0, 0, 0)
+    main.BackgroundTransparency = 1
+    tw(main, {Size = UDim2.new(0, 420, 0, 500), BackgroundTransparency = 0.03}, 0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+end
+
+closeBtn.MouseButton1Click:Connect(hideMain)
+minBtn.MouseButton1Click:Connect(hideMain)
+
+-- Drag + Click for toggle (5px threshold)
+local tbDrag, tbDragStart, tbStartPos, tbDidDrag
+toggleBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        tbDrag = true; tbDidDrag = false
+        tbDragStart = input.Position; tbStartPos = toggleBtn.Position
+    end
+end)
+toggleBtn.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        if not tbDidDrag then
+            if mainVisible then hideMain() else showMain() end
+        end
+        tbDrag = false
+    end
+end)
+UIS.InputChanged:Connect(function(input)
+    if tbDrag and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local d = input.Position - tbDragStart
+        if math.abs(d.X) > 5 or math.abs(d.Y) > 5 then tbDidDrag = true end
+        toggleBtn.Position = UDim2.new(tbStartPos.X.Scale, tbStartPos.X.Offset + d.X, tbStartPos.Y.Scale, tbStartPos.Y.Offset + d.Y)
+    end
+end)
+
+-- Drag main frame
+local mDrag, mDragStart, mStartPos
+header.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        mDrag = true; mDragStart = input.Position; mStartPos = main.Position
+    end
+end)
+header.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        mDrag = false
+    end
+end)
+UIS.InputChanged:Connect(function(input)
+    if mDrag and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local d = input.Position - mDragStart
+        main.Position = UDim2.new(mStartPos.X.Scale, mStartPos.X.Offset + d.X, mStartPos.Y.Scale, mStartPos.Y.Offset + d.Y)
+    end
+end)
+
+-- Clean up on character death
+player.CharacterAdded:Connect(function()
+    stopFarm("orbs")
+    stopFarm("steps")
+    stopFarm("gems")
+    stopFarm("hoops")
+    stopFarm("rebirths")
+end)
+
+warn("[LoS Sheitsa Hub V2] >> Loaded!")
