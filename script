@@ -1,12 +1,12 @@
 -- ============================================
 -- Legends of Speed | Sheitsa Hub V2
--- Custom Dark AMOLED UI
+-- Custom AMOLED Dark UI (No External Libraries)
 -- ============================================
 
+-- ========== SERVICES ==========
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
 local RS = game:GetService("ReplicatedStorage")
 local CoreGui = game:GetService("CoreGui")
 local player = Players.LocalPlayer
@@ -14,353 +14,453 @@ local DiscordLink = "https://discord.gg/ZE6vyxgydK"
 
 -- ========== THEME ==========
 local C = {
-    BG            = Color3.fromRGB(8, 8, 12),
-    BG2           = Color3.fromRGB(12, 12, 18),
-    Card          = Color3.fromRGB(18, 18, 26),
-    CardHover     = Color3.fromRGB(24, 24, 34),
-    Header        = Color3.fromRGB(14, 14, 20),
-    HeaderLine    = Color3.fromRGB(28, 28, 40),
-    Text          = Color3.fromRGB(230, 230, 238),
-    Sub           = Color3.fromRGB(120, 120, 140),
-    Accent        = Color3.fromRGB(80, 200, 130),
-    AccentDim     = Color3.fromRGB(40, 100, 65),
-    AccentHover   = Color3.fromRGB(95, 215, 145),
-    Border        = Color3.fromRGB(30, 30, 42),
-    BorderLight   = Color3.fromRGB(40, 40, 55),
-    Close         = Color3.fromRGB(200, 55, 55),
-    CloseHover    = Color3.fromRGB(225, 75, 75),
-    Discord       = Color3.fromRGB(88, 101, 242),
-    DiscordHover  = Color3.fromRGB(105, 118, 255),
-    TabActive     = Color3.fromRGB(80, 200, 130),
-    TabInactive   = Color3.fromRGB(18, 18, 26),
-    SectionLabel  = Color3.fromRGB(255, 100, 70),
-    InputBG       = Color3.fromRGB(6, 6, 10),
-    DDBg          = Color3.fromRGB(12, 12, 18),
-    DDHover       = Color3.fromRGB(22, 22, 32),
-    ToggleOn      = Color3.fromRGB(80, 200, 130),
-    ToggleOff     = Color3.fromRGB(40, 40, 55),
-    Black         = Color3.fromRGB(4, 4, 4),
-    White         = Color3.fromRGB(255, 255, 255),
+    BG = Color3.fromRGB(10, 10, 14),
+    Card = Color3.fromRGB(18, 18, 24),
+    CardHover = Color3.fromRGB(24, 24, 32),
+    TitleBar = Color3.fromRGB(14, 14, 20),
+    Text = Color3.fromRGB(230, 230, 235),
+    TextSub = Color3.fromRGB(130, 130, 145),
+    Accent = Color3.fromRGB(100, 220, 140),
+    AccentDark = Color3.fromRGB(60, 160, 100),
+    Border = Color3.fromRGB(30, 30, 40),
+    ToggleOn = Color3.fromRGB(100, 220, 140),
+    ToggleOff = Color3.fromRGB(45, 45, 58),
 }
 
--- ========== FARM STATE ==========
+-- ========== THREAD MANAGEMENT ==========
 local farmThreads = {}
 
 local function stopFarm(name)
-    if farmThreads[name] then
-        farmThreads[name] = false
-        farmThreads[name] = nil
-    end
+    farmThreads[name] = false
 end
 
-local function isFarming(name)
-    return farmThreads[name] == true
+-- ========== TWEEN HELPER ==========
+local function tw(obj, props, dur)
+    local info = TweenInfo.new(dur or 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+    local t = TweenService:Create(obj, info, props)
+    t:Play()
+    return t
 end
 
--- ========== HELPERS ==========
-local function new(class, props, parent)
-    local inst = Instance.new(class)
-    for k, v in pairs(props) do inst[k] = v end
-    if parent then inst.Parent = parent end
-    return inst
-end
-local function corner(inst, r) return new("UICorner", {CornerRadius = UDim.new(0, r or 10)}, inst) end
-local function stroke(inst, c, t) return new("UIStroke", {Color = c or C.Border, Thickness = t or 1}, inst) end
-local function tw(inst, props, dur, style, dir)
-    TweenService:Create(inst, TweenInfo.new(dur or 0.3, style or Enum.EasingStyle.Quad, dir or Enum.EasingDirection.Out), props):Play()
-end
-local function clamp(v, lo, hi) return math.max(lo, math.min(hi, v)) end
-
--- ========== SCREEN GUI ==========
-local gui = new("ScreenGui", {
-    Name = "LoS_SheitsaHub",
-    ResetOnSpawn = false,
-    ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
-}, CoreGui)
+-- ========== MAIN SCREENGUI ==========
+local gui = Instance.new("ScreenGui")
+gui.Name = "LoS_SheitsaHub"
+gui.ResetOnSpawn = false
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.Parent = CoreGui
 
 -- ========== MAIN FRAME ==========
-local main = new("Frame", {
-    Name = "Main",
-    Size = UDim2.new(0, 0, 0, 0),
-    Position = UDim2.new(0.5, -200, 0.5, -250),
-    BackgroundColor3 = C.BG,
-    BackgroundTransparency = 0.03,
-    BorderSizePixel = 0,
-}, gui)
-corner(main, 14)
-stroke(main, C.BorderLight, 1)
+local main = Instance.new("Frame")
+main.Name = "Main"
+main.Size = UDim2.new(0, 390, 0, 500)
+main.Position = UDim2.new(0.5, -195, 0.5, -250)
+main.BackgroundColor3 = C.BG
+main.BorderSizePixel = 0
+main.ClipsDescendants = false
+main.Parent = gui
 
-task.defer(function()
-    tw(main, {Size = UDim2.new(0, 420, 0, 500)}, 0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-end)
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 12)
+mainCorner.Parent = main
 
--- ========== HEADER ==========
-local header = new("Frame", {
-    Size = UDim2.new(1, 0, 0, 52),
-    BackgroundColor3 = C.Header,
-    BorderSizePixel = 0,
-}, main)
-corner(header, 14)
-new("Frame", {Size = UDim2.new(1, 0, 0, 14), Position = UDim2.new(0, 0, 1, -14), BackgroundColor3 = C.Header, BorderSizePixel = 0}, header)
-new("Frame", {Size = UDim2.new(1, 0, 0, 1.5), Position = UDim2.new(0, 0, 1, -1.5), BackgroundColor3 = C.Border, BorderSizePixel = 0}, header)
+local mainStroke = Instance.new("UIStroke")
+mainStroke.Color = C.Border
+mainStroke.Thickness = 1
+mainStroke.Parent = main
 
-new("TextLabel", {
-    Text = "Legends of Speed",
-    Size = UDim2.new(1, -80, 0.52, 0), Position = UDim2.new(0, 16, 0, 0),
-    BackgroundTransparency = 1, TextColor3 = C.Text, TextSize = 14.5,
-    Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd,
-}, header)
+-- ========== TITLE BAR ==========
+local titleBar = Instance.new("Frame")
+titleBar.Name = "TitleBar"
+titleBar.Size = UDim2.new(1, 0, 0, 42)
+titleBar.Position = UDim2.new(0, 0, 0, 0)
+titleBar.BackgroundColor3 = C.TitleBar
+titleBar.BorderSizePixel = 0
+titleBar.ZIndex = 2
+titleBar.Parent = main
 
-new("TextLabel", {
-    Text = "Sheitsa Hub V2", Size = UDim2.new(1, -80, 0.42, 0), Position = UDim2.new(0, 16, 0.55, 0),
-    BackgroundTransparency = 1, TextColor3 = C.Sub, TextSize = 10.5,
-    Font = Enum.Font.GothamMedium, TextXAlignment = Enum.TextXAlignment.Left,
-}, header)
+local titleBarCorner = Instance.new("UICorner")
+titleBarCorner.CornerRadius = UDim.new(0, 12)
+titleBarCorner.Parent = titleBar
 
--- Minimize Button
-local minBtn = new("TextButton", {
-    Size = UDim2.new(0, 28, 0, 28), Position = UDim2.new(1, -66, 0, 12),
-    BackgroundColor3 = C.Card, Text = "\226\128\148", TextColor3 = C.Sub, TextSize = 18,
-    Font = Enum.Font.GothamBold, BorderSizePixel = 0, AutoButtonColor = false,
-}, header)
-corner(minBtn, 7)
-minBtn.MouseEnter:Connect(function() tw(minBtn, {BackgroundColor3 = C.CardHover}, 0.15) end)
-minBtn.MouseLeave:Connect(function() tw(minBtn, {BackgroundColor3 = C.Card}, 0.15) end)
+-- Cover bottom corners of title bar
+local titleCover = Instance.new("Frame")
+titleCover.Size = UDim2.new(1, 0, 0, 12)
+titleCover.Position = UDim2.new(0, 0, 1, -12)
+titleCover.BackgroundColor3 = C.TitleBar
+titleCover.BorderSizePixel = 0
+titleCover.ZIndex = 2
+titleCover.Parent = titleBar
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Name = "Title"
+titleLabel.Size = UDim2.new(1, -50, 1, 0)
+titleLabel.Position = UDim2.new(0, 16, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "Legends of Speed | Sheitsa Hub V2"
+titleLabel.TextColor3 = C.Text
+titleLabel.TextSize = 14
+titleLabel.Font = Enum.Font.GothamBold
+ titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.ZIndex = 3
+titleLabel.Parent = titleBar
 
 -- Close Button
-local closeBtn = new("TextButton", {
-    Size = UDim2.new(0, 28, 0, 28), Position = UDim2.new(1, -34, 0, 12),
-    BackgroundColor3 = C.Close, Text = "\226\156\156", TextColor3 = C.White, TextSize = 14,
-    Font = Enum.Font.GothamBold, BorderSizePixel = 0, AutoButtonColor = false,
-}, header)
-corner(closeBtn, 7)
-closeBtn.MouseEnter:Connect(function() tw(closeBtn, {BackgroundColor3 = C.CloseHover}, 0.15) end)
-closeBtn.MouseLeave:Connect(function() tw(closeBtn, {BackgroundColor3 = C.Close}, 0.15) end)
+local closeBtn = Instance.new("TextButton")
+closeBtn.Name = "Close"
+closeBtn.Size = UDim2.new(0, 26, 0, 26)
+closeBtn.Position = UDim2.new(1, -34, 0, 8)
+closeBtn.BackgroundColor3 = Color3.fromRGB(200, 55, 55)
+closeBtn.Text = "\u{2715}"
+closeBtn.TextColor3 = Color3.new(1, 1, 1)
+closeBtn.TextSize = 12
+closeBtn.Font = Enum.Font.Gotham
+closeBtn.BorderSizePixel = 0
+closeBtn.AutoButtonColor = false
+closeBtn.ZIndex = 3
+closeBtn.Parent = titleBar
 
--- ========== TAB NAVIGATION ==========
-local tabNav = new("Frame", {
-    Size = UDim2.new(1, 0, 0, 42),
-    Position = UDim2.new(0, 0, 0, 52),
-    BackgroundColor3 = C.BG2,
-    BorderSizePixel = 0,
-}, main)
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 8)
+closeCorner.Parent = closeBtn
 
-local tabNames = {"Home", "Pets", "Teleports", "Extra"}
-local tabButtons = {}
-local tabCount = #tabNames
+closeBtn.MouseButton1Click:Connect(function()
+    gui.Enabled = false
+end)
 
-for i, name in ipairs(tabNames) do
-    local isActive = (i == 1)
-    local btn = new("TextButton", {
-        Size = UDim2.new(1 / tabCount, 0, 1, 0),
-        Position = UDim2.new((i - 1) / tabCount, 0, 0, 0),
-        BackgroundColor3 = isActive and C.TabActive or C.TabInactive,
-        Text = name,
-        TextColor3 = isActive and C.Black or C.Sub,
-        TextSize = 12,
-        Font = Enum.Font.GothamSemibold,
-        BorderSizePixel = 0,
-        AutoButtonColor = false,
-    }, tabNav)
-    if isActive then
-        new("Frame", {
-            Size = UDim2.new(0.4, 0, 0, 2.5), Position = UDim2.new(0.3, 0, 1, -2.5),
-            BackgroundColor3 = C.Black, BorderSizePixel = 0,
-        }, btn)
-    end
-    btn.MouseEnter:Connect(function()
-        if not isActive then tw(btn, {BackgroundColor3 = C.CardHover}, 0.15) end
-    end)
-    btn.MouseLeave:Connect(function()
-        if not isActive then tw(btn, {BackgroundColor3 = C.TabInactive}, 0.15) end
-    end)
-    tabButtons[name] = btn
-end
+-- ========== DRAG TITLE BAR ==========
+local dragActive = false
+local dragStart = Vector3.new(0, 0, 0)
+local dragStartPos = UDim2.new()
 
--- ========== CONTENT AREA ==========
-local contentArea = new("Frame", {
-    Size = UDim2.new(1, -20, 1, -108),
-    Position = UDim2.new(0, 10, 0, 98),
-    BackgroundTransparency = 1,
-    ClipsDescendants = true,
-}, main)
-
-local tabFrames = {}
-for _, name in ipairs(tabNames) do
-    local scroll = new("ScrollingFrame", {
-        Size = UDim2.new(1, 0, 1, 0),
-        BackgroundTransparency = 1, BorderSizePixel = 0,
-        ScrollBarThickness = 3, ScrollBarImageColor3 = Color3.fromRGB(50, 50, 65),
-        CanvasSize = UDim2.new(0, 0, 0, 0), AutomaticCanvasSize = Enum.AutomaticSize.Y,
-        Visible = (name == "Home"),
-    }, contentArea)
-    new("UIPadding", {PaddingTop = UDim.new(0, 8), PaddingBottom = UDim.new(0, 10), PaddingLeft = UDim.new(0, 4), PaddingRight = UDim.new(0, 4)}, scroll)
-    new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 8)}, scroll)
-    tabFrames[name] = scroll
-end
-
--- ========== STATUS BAR ==========
-new("Frame", {
-    Size = UDim2.new(1, 0, 0, 26),
-    Position = UDim2.new(0, 0, 1, -26),
-    BackgroundColor3 = C.Header,
-    BorderSizePixel = 0,
-}, main)
-new("TextLabel", {
-    Text = "Sheitsa Hub V2  |  Legends of Speed",
-    Size = UDim2.new(1, -16, 0, 26), Position = UDim2.new(0, 8, 1, -26),
-    BackgroundTransparency = 1, TextColor3 = C.Sub, TextSize = 9.5,
-    Font = Enum.Font.GothamMedium, TextXAlignment = Enum.TextXAlignment.Left,
-}, main)
-
--- ========== COMPONENTS ==========
-local function makeSection(parent, text, order)
-    new("TextLabel", {
-        Text = text, Size = UDim2.new(1, 0, 0, 22), BackgroundTransparency = 1,
-        TextColor3 = C.SectionLabel, TextSize = 11.5, Font = Enum.Font.GothamBold,
-        TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = order or 0,
-    }, parent)
-end
-
-local function makeButton(parent, text, bgColor, hoverColor, order, cb)
-    local wrap = new("Frame", {
-        Size = UDim2.new(1, 0, 0, 42), BackgroundColor3 = bgColor,
-        BorderSizePixel = 0, LayoutOrder = order or 0,
-    }, parent)
-    corner(wrap, 10)
-    stroke(wrap, C.BorderLight, 1)
-    local btn = new("TextButton", {
-        Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1,
-        Text = text, TextColor3 = C.Black, TextSize = 13.5,
-        Font = Enum.Font.GothamSemibold, BorderSizePixel = 0, AutoButtonColor = false,
-    }, wrap)
-    wrap.MouseEnter:Connect(function() tw(wrap, {BackgroundColor3 = hoverColor}, 0.2) end)
-    wrap.MouseLeave:Connect(function() tw(wrap, {BackgroundColor3 = bgColor}, 0.2) end)
-    if cb then btn.MouseButton1Click:Connect(cb) end
-    return wrap, btn
-end
-
-local function makeDropdown(parent, label, options, default, order)
-    local wrap = new("Frame", {
-        Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1,
-        AutomaticSize = Enum.AutomaticSize.Y, LayoutOrder = order or 0,
-    }, parent)
-    new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 5)}, wrap)
-    new("TextLabel", {
-        Text = label, Size = UDim2.new(1, 0, 0, 16), BackgroundTransparency = 1,
-        TextColor3 = C.Sub, TextSize = 11, Font = Enum.Font.GothamMedium,
-        TextXAlignment = Enum.TextXAlignment.Left,
-    }, wrap)
-    local selected = default or options[1]
-    local isOpen = false
-    local selectWrap = new("Frame", {
-        Size = UDim2.new(1, 0, 0, 36), BackgroundColor3 = C.InputBG, BorderSizePixel = 0,
-    }, wrap)
-    corner(selectWrap, 9)
-    stroke(selectWrap, C.Border, 1)
-    local selectBtn = new("TextButton", {
-        Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1,
-        Text = "  \226\149\190  " .. selected, TextColor3 = C.Text,
-        TextSize = 12.5, Font = Enum.Font.Gotham, BorderSizePixel = 0,
-        TextXAlignment = Enum.TextXAlignment.Left, AutoButtonColor = false,
-    }, selectWrap)
-    local listFrame = new("Frame", {
-        Size = UDim2.new(1, 0, 0, 0), BackgroundColor3 = C.DDBg,
-        BorderSizePixel = 0, ClipsDescendants = true, ZIndex = 5,
-    }, wrap)
-    corner(listFrame, 9)
-    stroke(listFrame, C.Border, 1)
-    new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder}, listFrame)
-    for i, opt in ipairs(options) do
-        local oBtn = new("TextButton", {
-            Size = UDim2.new(1, 0, 0, 32), BackgroundColor3 = C.DDBg,
-            Text = "   " .. opt, TextColor3 = C.Text, TextSize = 12,
-            Font = Enum.Font.Gotham, BorderSizePixel = 0,
-            TextXAlignment = Enum.TextXAlignment.Left, AutoButtonColor = false,
-            LayoutOrder = i, ZIndex = 5,
-        }, listFrame)
-        oBtn.MouseEnter:Connect(function() tw(oBtn, {BackgroundColor3 = C.DDHover}, 0.12) end)
-        oBtn.MouseLeave:Connect(function() tw(oBtn, {BackgroundColor3 = C.DDBg}, 0.12) end)
-        oBtn.MouseButton1Click:Connect(function()
-            selected = opt; selectBtn.Text = "  \226\149\190  " .. opt; isOpen = false
-            tw(listFrame, {Size = UDim2.new(1, 0, 0, 0)}, 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragActive = true
+        dragStart = input.Position
+        dragStartPos = main.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragActive = false
+            end
         end)
     end
-    selectBtn.MouseButton1Click:Connect(function()
-        isOpen = not isOpen
-        tw(listFrame, {Size = UDim2.new(1, 0, 0, isOpen and (#options * 32 + 4) or 0)}, 0.2)
-    end)
-    return { Get = function() return selected end }
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if dragActive and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        main.Position = UDim2.new(
+            dragStartPos.X.Scale, dragStartPos.X.Offset + delta.X,
+            dragStartPos.Y.Scale, dragStartPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+-- ========== SIDEBAR ==========
+local sidebar = Instance.new("Frame")
+sidebar.Name = "Sidebar"
+sidebar.Size = UDim2.new(0, 88, 1, -42)
+sidebar.Position = UDim2.new(0, 0, 0, 42)
+sidebar.BackgroundColor3 = C.Card
+sidebar.BorderSizePixel = 0
+sidebar.ZIndex = 1
+sidebar.Parent = main
+
+local sidebarStroke = Instance.new("UIStroke")
+sidebarStroke.Color = C.Border
+sidebarStroke.Thickness = 1
+sidebarStroke.Parent = sidebar
+
+-- ========== CONTENT AREA ==========
+-- Plain Frame — each tab page is its own ScrollingFrame
+local contentArea = Instance.new("Frame")
+contentArea.Name = "ContentArea"
+contentArea.Size = UDim2.new(0, 302, 0, 458)
+contentArea.Position = UDim2.new(0, 88, 0, 42)
+contentArea.BackgroundTransparency = 1
+contentArea.BorderSizePixel = 0
+contentArea.ClipsDescendants = true
+contentArea.ZIndex = 1
+contentArea.Parent = main
+
+-- ========== TAB SYSTEM ==========
+local tabNames = {"Home", "Pets", "Teleports", "Extra"}
+local tabButtons = {}
+local tabIndicators = {}
+local tabPages = {}
+local activeTab = nil
+
+for i, name in ipairs(tabNames) do
+    -- Tab page (ScrollingFrame that fills content area)
+    local page = Instance.new("ScrollingFrame")
+    page.Name = name
+    page.Size = UDim2.new(1, 0, 1, 0)
+    page.BackgroundTransparency = 1
+    page.ScrollBarThickness = 4
+    page.ScrollBarImageColor3 = Color3.fromRGB(40, 40, 55)
+    page.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    page.CanvasSize = UDim2.new(0, 0, 0, 0)
+    page.Visible = (i == 1)
+    page.ZIndex = 1
+    page.Parent = contentArea
+
+    local pagePad = Instance.new("UIPadding")
+    pagePad.PaddingLeft = UDim.new(0, 12)
+    pagePad.PaddingRight = UDim.new(0, 12)
+    pagePad.PaddingTop = UDim.new(0, 12)
+    pagePad.PaddingBottom = UDim.new(0, 12)
+    pagePad.Parent = page
+
+    local pageList = Instance.new("UIListLayout")
+    pageList.SortOrder = Enum.SortOrder.LayoutOrder
+    pageList.Padding = UDim.new(0, 6)
+    pageList.Parent = page
+
+    tabPages[name] = page
+
+    -- Sidebar tab button
+    local btn = Instance.new("TextButton")
+    btn.Name = name
+    btn.Size = UDim2.new(1, -8, 0, 34)
+    btn.Position = UDim2.new(0, 4, 0, 8 + (i - 1) * 36)
+    btn.BackgroundTransparency = (i == 1) and 0 or 1
+    btn.BackgroundColor3 = C.CardHover
+    btn.Text = name
+    btn.TextColor3 = (i == 1) and C.Text or C.TextSub
+    btn.TextSize = 11
+    btn.Font = Enum.Font.GothamMedium
+    btn.BorderSizePixel = 0
+    btn.AutoButtonColor = false
+    btn.ZIndex = 2
+    btn.Parent = sidebar
+
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 6)
+    btnCorner.Parent = btn
+
+    -- Active indicator (2px accent bar on left)
+    local indicator = Instance.new("Frame")
+    indicator.Name = "Indicator"
+    indicator.Size = UDim2.new(0, 2, 1, 0)
+    indicator.Position = UDim2.new(0, 0, 0, 0)
+    indicator.BackgroundColor3 = C.Accent
+    indicator.BorderSizePixel = 0
+    indicator.Visible = (i == 1)
+    indicator.ZIndex = 3
+    indicator.Parent = btn
+
+    tabButtons[name] = btn
+    tabIndicators[name] = indicator
 end
 
-local function makeToggle(parent, label, defaultOn, order, callback)
-    local wrap = new("Frame", {
-        Size = UDim2.new(1, 0, 0, 44), BackgroundColor3 = C.Card,
-        BorderSizePixel = 0, LayoutOrder = order or 0,
-    }, parent)
-    corner(wrap, 10)
-    stroke(wrap, C.Border, 1)
-    new("TextLabel", {
-        Text = "  " .. label, Size = UDim2.new(1, -64, 1, 0), BackgroundTransparency = 1,
-        TextColor3 = defaultOn and C.White or C.Sub, TextSize = 13,
-        Font = Enum.Font.GothamMedium, TextXAlignment = Enum.TextXAlignment.Left,
-    }, wrap)
-    local toggleBg = new("Frame", {
-        Size = UDim2.new(0, 44, 0, 24), Position = UDim2.new(1, -54, 0.5, -12),
-        BackgroundColor3 = defaultOn and C.ToggleOn or C.ToggleOff, BorderSizePixel = 0,
-    }, wrap)
-    corner(toggleBg, 12)
-    local dot = new("Frame", {
-        Size = UDim2.new(0, 18, 0, 18),
-        Position = defaultOn and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9),
-        BackgroundColor3 = C.White, BorderSizePixel = 0,
-    }, toggleBg)
-    corner(dot, 9)
-    local on = defaultOn
-    local btn = new("TextButton", {
-        Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1,
-        Text = "", AutoButtonColor = false,
-    }, wrap)
-    wrap.MouseEnter:Connect(function() tw(wrap, {BackgroundColor3 = C.CardHover}, 0.15) end)
-    wrap.MouseLeave:Connect(function() tw(wrap, {BackgroundColor3 = C.Card}, 0.15) end)
-    btn.MouseButton1Click:Connect(function()
-        on = not on
-        tw(dot, {Position = on and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9)}, 0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-        tw(toggleBg, {BackgroundColor3 = on and C.ToggleOn or C.ToggleOff}, 0.25)
-        for _, child in ipairs(wrap:GetChildren()) do
-            if child:IsA("TextLabel") then
-                tw(child, {TextColor3 = on and C.White or C.Sub}, 0.2)
-            end
+activeTab = tabNames[1]
+
+local function switchTab(name)
+    if activeTab == name then return end
+    -- Hide old tab
+    tabPages[activeTab].Visible = false
+    tabIndicators[activeTab].Visible = false
+    tabButtons[activeTab].BackgroundTransparency = 1
+    tabButtons[activeTab].TextColor3 = C.TextSub
+    -- Show new tab
+    activeTab = name
+    tabPages[name].Visible = true
+    tabIndicators[name].Visible = true
+    tabButtons[name].BackgroundTransparency = 0
+    tabButtons[name].BackgroundColor3 = C.CardHover
+    tabButtons[name].TextColor3 = C.Text
+    -- Scroll to top
+    contentArea.CanvasPosition = Vector2.new(0, 0)
+end
+
+for _, name in ipairs(tabNames) do
+    tabButtons[name].MouseButton1Click:Connect(function()
+        switchTab(name)
+    end)
+end
+
+-- ========== UI ELEMENT BUILDERS ==========
+
+local function makeSection(parent, text, order)
+    local label = Instance.new("TextLabel")
+    label.Name = "Section_" .. text
+    label.Size = UDim2.new(1, 0, 0, 24)
+    label.BackgroundTransparency = 1
+    label.Text = string.upper(text)
+    label.TextColor3 = C.TextSub
+    label.TextSize = 10
+    label.Font = Enum.Font.GothamBold
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.LayoutOrder = order
+    label.Parent = parent
+    return label
+end
+
+local function makeToggle(parent, title, desc, order, callback)
+    local container = Instance.new("Frame")
+    container.Name = "Toggle_" .. title
+    container.Size = UDim2.new(1, 0, 0, 50)
+    container.BackgroundTransparency = 1
+    container.LayoutOrder = order
+    container.Parent = parent
+
+    local titleLbl = Instance.new("TextLabel")
+    titleLbl.Name = "Title"
+    titleLbl.Size = UDim2.new(1, -54, 0, 18)
+    titleLbl.Position = UDim2.new(0, 0, 0, 2)
+    titleLbl.BackgroundTransparency = 1
+    titleLbl.Text = title
+    titleLbl.TextColor3 = C.Text
+    titleLbl.TextSize = 13
+    titleLbl.Font = Enum.Font.GothamSemibold
+    titleLbl.TextXAlignment = Enum.TextXAlignment.Left
+    titleLbl.Parent = container
+
+    local descLbl = Instance.new("TextLabel")
+    descLbl.Name = "Desc"
+    descLbl.Size = UDim2.new(1, -54, 0, 14)
+    descLbl.Position = UDim2.new(0, 0, 0, 20)
+    descLbl.BackgroundTransparency = 1
+    descLbl.Text = desc
+    descLbl.TextColor3 = C.TextSub
+    descLbl.TextSize = 10
+    descLbl.Font = Enum.Font.Gotham
+    descLbl.TextXAlignment = Enum.TextXAlignment.Left
+    descLbl.TextTruncate = Enum.TextTruncate.AtEnd
+    descLbl.Parent = container
+
+    -- Toggle switch track
+    local track = Instance.new("Frame")
+    track.Name = "Track"
+    track.Size = UDim2.new(0, 40, 0, 22)
+    track.Position = UDim2.new(1, -48, 0.5, -11)
+    track.BackgroundColor3 = C.ToggleOff
+    track.BorderSizePixel = 0
+    track.Parent = container
+
+    local trackCorner = Instance.new("UICorner")
+    trackCorner.CornerRadius = UDim.new(0, 11)
+    trackCorner.Parent = track
+
+    -- Toggle circle
+    local circle = Instance.new("Frame")
+    circle.Name = "Circle"
+    circle.Size = UDim2.new(0, 18, 0, 18)
+    circle.Position = UDim2.new(0, 2, 0.5, -9)
+    circle.BackgroundColor3 = C.TextSub
+    circle.BorderSizePixel = 0
+    circle.Parent = track
+
+    local circleCorner = Instance.new("UICorner")
+    circleCorner.CornerRadius = UDim.new(0, 9)
+    circleCorner.Parent = circle
+
+    -- Hidden click detector
+    local clickBtn = Instance.new("TextButton")
+    clickBtn.Name = "ClickDetector"
+    clickBtn.Size = UDim2.new(1, 0, 1, 0)
+    clickBtn.Position = UDim2.new(0, 0, 0, 0)
+    clickBtn.BackgroundTransparency = 1
+    clickBtn.Text = ""
+    clickBtn.ZIndex = 5
+    clickBtn.Parent = track
+
+    local isOn = false
+
+    local function setVisual(on)
+        if on then
+            tw(track, {BackgroundColor3 = C.ToggleOn}, 0.2)
+            tw(circle, {Position = UDim2.new(1, -20, 0.5, -9), BackgroundColor3 = Color3.new(1, 1, 1)}, 0.2)
+        else
+            tw(track, {BackgroundColor3 = C.ToggleOff}, 0.2)
+            tw(circle, {Position = UDim2.new(0, 2, 0.5, -9), BackgroundColor3 = C.TextSub}, 0.2)
         end
-        if callback then callback(on) end
+    end
+
+    clickBtn.MouseButton1Click:Connect(function()
+        isOn = not isOn
+        setVisual(isOn)
+        callback(isOn)
     end)
-    return { IsOn = function() return on end, SetOn = function(v) on = v; callback(v) end }
+
+    return container
 end
 
--- ========== TAB 1: HOME ==========
-local homeTab = tabFrames["Home"]
+local function makeButton(parent, text, order, callback)
+    local btn = Instance.new("TextButton")
+    btn.Name = "Button_" .. text
+    btn.Size = UDim2.new(1, 0, 0, 38)
+    btn.BackgroundColor3 = C.Accent
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(5, 5, 5)
+    btn.TextSize = 13
+    btn.Font = Enum.Font.GothamSemibold
+    btn.BorderSizePixel = 0
+    btn.AutoButtonColor = false
+    btn.LayoutOrder = order
+    btn.Parent = parent
 
-makeSection(homeTab, "-- Auto-Farm", 0)
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 8)
+    btnCorner.Parent = btn
 
--- Auto Orbs
-makeToggle(homeTab, "Auto Orbs", false, 1, function(on)
+    btn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            btn.BackgroundColor3 = C.AccentDark
+        end
+    end)
+
+    btn.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            btn.BackgroundColor3 = C.Accent
+        end
+    end)
+
+    btn.MouseButton1Click:Connect(callback)
+
+    return btn
+end
+
+local function makeLabel(parent, text, order)
+    local label = Instance.new("TextLabel")
+    label.Name = "Label_" .. text
+    label.Size = UDim2.new(1, 0, 0, 0)
+    label.AutomaticSize = Enum.AutomaticSize.Y
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = C.Text
+    label.TextSize = 12
+    label.Font = Enum.Font.Gotham
+    label.TextWrapped = true
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.LayoutOrder = order
+    label.Parent = parent
+    return label
+end
+
+-- ========== TAB 1: HOME (Auto-Farm) ==========
+local homePage = tabPages["Home"]
+
+makeSection(homePage, "Auto-Farm", 1)
+
+makeToggle(homePage, "Auto Orbs", "Collects all orbs in the city", 2, function(on)
     stopFarm("orbs")
     if on then
         farmThreads["orbs"] = true
         spawn(function()
-            task.wait(1)
-            while farmThreads["orbs"] do
+            while farmThreads["orbs"] == true do
                 task.wait()
-                local char = player.Character
-                if char and char:FindFirstChild("HumanoidRootPart") then
-                    local hrp = char.HumanoidRootPart
-                    local orbFolder = workspace:FindFirstChild("orbFolder")
-                    if orbFolder then
-                        local city = orbFolder:FindFirstChild("City")
-                        if city then
-                            for _, v in pairs(city:GetChildren()) do
-                                if farmThreads["orbs"] and v.Name ~= "Gem" and v:FindFirstChild("outerOrb") then
-                                    v.outerOrb.CFrame = hrp.CFrame
+                if farmThreads["orbs"] == true then
+                    local char = player.Character
+                    if char and char:FindFirstChild("HumanoidRootPart") then
+                        local hrp = char.HumanoidRootPart
+                        local orbFolder = workspace:FindFirstChild("orbFolder")
+                        if orbFolder then
+                            local city = orbFolder:FindFirstChild("City")
+                            if city then
+                                for _, v in pairs(city:GetChildren()) do
+                                    if farmThreads["orbs"] == true and v.Name ~= "Gem" and v:FindFirstChild("outerOrb") then
+                                        v.outerOrb.CFrame = hrp.CFrame
+                                    end
                                 end
                             end
                         end
@@ -371,21 +471,18 @@ makeToggle(homeTab, "Auto Orbs", false, 1, function(on)
     end
 end)
 
--- Auto Steps
-makeToggle(homeTab, "Auto Steps", false, 2, function(on)
+makeToggle(homePage, "Auto Steps", "Fires orb event for steps every 0.5s", 3, function(on)
     stopFarm("steps")
     if on then
         farmThreads["steps"] = true
         spawn(function()
-            task.wait(1)
-            while farmThreads["steps"] do
+            while farmThreads["steps"] == true do
                 task.wait(0.5)
-                if farmThreads["steps"] then
-                    local args = {"collectOrb", "Orange Orb", "City"}
-                    local orbEvent = RS:FindFirstChild("rEvents")
-                    if orbEvent then
-                        local ev = orbEvent:FindFirstChild("orbEvent")
-                        if ev then ev:FireServer(unpack(args)) end
+                if farmThreads["steps"] == true then
+                    local rEvents = RS:FindFirstChild("rEvents")
+                    if rEvents then
+                        local ev = rEvents:FindFirstChild("orbEvent")
+                        if ev then ev:FireServer("collectOrb", "Orange Orb", "City") end
                     end
                 end
             end
@@ -393,16 +490,14 @@ makeToggle(homeTab, "Auto Steps", false, 2, function(on)
     end
 end)
 
--- Auto Rebirths
-makeToggle(homeTab, "Auto Rebirths", false, 3, function(on)
+makeToggle(homePage, "Auto Rebirths", "Requests rebirth every 5 seconds", 4, function(on)
     stopFarm("rebirths")
     if on then
         farmThreads["rebirths"] = true
         spawn(function()
-            task.wait(1)
-            while farmThreads["rebirths"] do
+            while farmThreads["rebirths"] == true do
                 task.wait(5)
-                if farmThreads["rebirths"] then
+                if farmThreads["rebirths"] == true then
                     local rEvents = RS:FindFirstChild("rEvents")
                     if rEvents then
                         local ev = rEvents:FindFirstChild("rebirthEvent")
@@ -414,25 +509,25 @@ makeToggle(homeTab, "Auto Rebirths", false, 3, function(on)
     end
 end)
 
--- Auto Gems
-makeToggle(homeTab, "Auto Gems", false, 4, function(on)
+makeToggle(homePage, "Auto Gems", "Collects all gems in the city", 5, function(on)
     stopFarm("gems")
     if on then
         farmThreads["gems"] = true
         spawn(function()
-            task.wait(1)
-            while farmThreads["gems"] do
+            while farmThreads["gems"] == true do
                 task.wait()
-                local char = player.Character
-                if char and char:FindFirstChild("HumanoidRootPart") then
-                    local hrp = char.HumanoidRootPart
-                    local orbFolder = workspace:FindFirstChild("orbFolder")
-                    if orbFolder then
-                        local city = orbFolder:FindFirstChild("City")
-                        if city then
-                            for _, v in pairs(city:GetChildren()) do
-                                if farmThreads["gems"] and v.Name == "Gem" and v:FindFirstChild("outerGem") then
-                                    v.outerGem.CFrame = hrp.CFrame
+                if farmThreads["gems"] == true then
+                    local char = player.Character
+                    if char and char:FindFirstChild("HumanoidRootPart") then
+                        local hrp = char.HumanoidRootPart
+                        local orbFolder = workspace:FindFirstChild("orbFolder")
+                        if orbFolder then
+                            local city = orbFolder:FindFirstChild("City")
+                            if city then
+                                for _, v in pairs(city:GetChildren()) do
+                                    if farmThreads["gems"] == true and v.Name == "Gem" and v:FindFirstChild("outerGem") then
+                                        v.outerGem.CFrame = hrp.CFrame
+                                    end
                                 end
                             end
                         end
@@ -443,23 +538,23 @@ makeToggle(homeTab, "Auto Gems", false, 4, function(on)
     end
 end)
 
--- Auto Hoops
-makeToggle(homeTab, "Auto Hoops", false, 5, function(on)
+makeToggle(homePage, "Auto Hoops", "Teleports all hoops to your position", 6, function(on)
     stopFarm("hoops")
     if on then
         farmThreads["hoops"] = true
         spawn(function()
-            task.wait(1)
-            while farmThreads["hoops"] do
+            while farmThreads["hoops"] == true do
                 task.wait()
-                local char = player.Character
-                if char and char:FindFirstChild("HumanoidRootPart") then
-                    local hrp = char.HumanoidRootPart
-                    local hoops = workspace:FindFirstChild("Hoops")
-                    if hoops then
-                        for _, v in pairs(hoops:GetChildren()) do
-                            if farmThreads["hoops"] then
-                                v.CFrame = hrp.CFrame
+                if farmThreads["hoops"] == true then
+                    local char = player.Character
+                    if char and char:FindFirstChild("HumanoidRootPart") then
+                        local hrp = char.HumanoidRootPart
+                        local hoops = workspace:FindFirstChild("Hoops")
+                        if hoops then
+                            for _, v in pairs(hoops:GetChildren()) do
+                                if farmThreads["hoops"] == true then
+                                    v.CFrame = hrp.CFrame
+                                end
                             end
                         end
                     end
@@ -470,277 +565,185 @@ makeToggle(homeTab, "Auto Hoops", false, 5, function(on)
 end)
 
 -- ========== TAB 2: PETS ==========
-local petsTab = tabFrames["Pets"]
+local petsPage = tabPages["Pets"]
 
-makeSection(petsTab, "-- OP Pets", 0)
+makeSection(petsPage, "OP Pets", 1)
 
--- Inf Glitch Pet
-local glitchWrap, glitchBtn = makeButton(petsTab, "Inf Glitch Pet", C.SectionLabel, Color3.fromRGB(255, 115, 85), 1, function()
+makeToggle(petsPage, "Inf Glitch Pet", "Spams rebirths + yellow orbs for infinite pets", 2, function(on)
     stopFarm("glitchPet")
-    farmThreads["glitchPet"] = true
+    if on then
+        farmThreads["glitchPet"] = true
 
-    -- Rebirth spam thread
-    spawn(function()
-        while farmThreads["glitchPet"] do
-            task.wait()
-            local rEvents = RS:FindFirstChild("rEvents")
-            if rEvents then
-                local ev = rEvents:FindFirstChild("rebirthEvent")
-                if ev then ev:FireServer("rebirthRequest") end
+        -- Thread 1: Rebirth spam
+        spawn(function()
+            while farmThreads["glitchPet"] == true do
+                task.wait()
+                if farmThreads["glitchPet"] == true then
+                    local rEvents = RS:FindFirstChild("rEvents")
+                    if rEvents then
+                        local ev = rEvents:FindFirstChild("rebirthEvent")
+                        if ev then ev:FireServer("rebirthRequest") end
+                    end
+                end
             end
-        end
-    end)
+        end)
 
-    -- Yellow orb spam thread
-    spawn(function()
-        while farmThreads["glitchPet"] do
-            task.wait(0.1)
-            if farmThreads["glitchPet"] then
-                local rEvents = RS:FindFirstChild("rEvents")
-                if rEvents then
-                    local ev = rEvents:FindFirstChild("orbEvent")
-                    if ev then
-                        for _ = 1, 40 do
-                            if farmThreads["glitchPet"] then
-                                ev:FireServer("collectOrb", "Yellow Orb", "City")
+        -- Thread 2: Yellow orb spam (40 fires every 0.1s)
+        spawn(function()
+            while farmThreads["glitchPet"] == true do
+                task.wait(0.1)
+                if farmThreads["glitchPet"] == true then
+                    local rEvents = RS:FindFirstChild("rEvents")
+                    if rEvents then
+                        local ev = rEvents:FindFirstChild("orbEvent")
+                        if ev then
+                            for _ = 1, 40 do
+                                if farmThreads["glitchPet"] == true then
+                                    ev:FireServer("collectOrb", "Yellow Orb", "City")
+                                end
                             end
                         end
                     end
                 end
             end
-        end
-    end)
+        end)
+    end
 end)
--- Fix text color for section button
-for _, child in ipairs(glitchWrap:GetChildren()) do
-    if child:IsA("TextButton") then child.TextColor3 = C.White end
-end
 
--- Stop Glitch Pet button
-local stopWrap, stopBtn = makeButton(petsTab, "Stop Glitch Pet", C.Close, C.CloseHover, 2, function()
-    stopFarm("glitchPet")
-    stopBtn.Text = "Stopped!"
-    task.delay(1.5, function() stopBtn.Text = "Stop Glitch Pet" end)
-end)
-for _, child in ipairs(stopWrap:GetChildren()) do
-    if child:IsA("TextButton") then child.TextColor3 = C.White end
-end
-
-new("Frame", {Size = UDim2.new(1, 0, 0, 8), BackgroundTransparency = 1, LayoutOrder = 3}, petsTab)
-
-makeSection(petsTab, "-- Pet Shop", 4)
-
--- Unlock Swift Samurai
-local samuraiWrap, samuraiBtn = makeButton(petsTab, "Unlock Swift Samurai", C.Discord, C.DiscordHover, 5, function()
+makeButton(petsPage, "Unlock Swift Samurai", 3, function()
     local petShop = RS:FindFirstChild("cPetShopFolder")
     local petShopRemote = RS:FindFirstChild("cPetShopRemote")
     if petShop and petShopRemote then
         local swiftSamurai = petShop:FindFirstChild("Swift Samurai")
         if swiftSamurai then
             petShopRemote:InvokeServer(swiftSamurai)
-            samuraiBtn.Text = "Done!"
-            task.delay(2, function() samuraiBtn.Text = "Unlock Swift Samurai" end)
-        else
-            samuraiBtn.Text = "Pet not found!"
-            task.delay(2, function() samuraiBtn.Text = "Unlock Swift Samurai" end)
         end
-    else
-        samuraiBtn.Text = "Game not found!"
-        task.delay(2, function() samuraiBtn.Text = "Unlock Swift Samurai" end)
     end
 end)
-for _, child in ipairs(samuraiWrap:GetChildren()) do
-    if child:IsA("TextButton") then child.TextColor3 = C.White end
-end
 
 -- ========== TAB 3: TELEPORTS ==========
-local teleTab = tabFrames["Teleports"]
+local telePage = tabPages["Teleports"]
 
-makeSection(teleTab, "-- Islands", 0)
+makeSection(telePage, "Islands", 1)
 
-local teleports = {
-    {name = "Teleport to Main City",               cf = CFrame.new(-576.270142, 4.1662488, 410.038574, -0.998445749, -5.50801449e-09, 0.0557322279, -4.12241367e-13, 1, 9.88225892e-08, -0.0557322279, 9.86689699e-08, -0.998445749)},
-    {name = "Teleport to Snow City",               cf = CFrame.new(-488.590027, 4.1662488, 2301.04224, -0.499920726, 1.05356229e-07, -0.866071165, -2.12529863e-12, 1, 1.21649691e-07, 0.866071165, 6.08170438e-08, -0.499920726)},
-    {name = "Teleport to Magma City",              cf = CFrame.new(2345.34839, 4.1662488, 4393.5, 0.228262901, 1.14109731e-07, 0.973599553, -6.69713807e-12, 1, -1.17202404e-07, -0.973599553, 2.67464397e-08, 0.228262901)},
-    {name = "Teleport to Legends Speed Highway",    cf = CFrame.new(3709.70703, 71.7461929, 5593.875, -0.0438015647, -1.0088355e-08, -0.999040246, -2.20692842e-14, 1, -1.00980451e-08, 0.999040246, -4.42288151e-10, -0.0438015647)},
-    {name = "Teleport to Jungle Island City",      cf = CFrame.new(1681.85168, 3.14525414, 12818.3633, 0.456854314, 6.8587525e-08, -0.889541507, -2.31062192e-08, 1, 6.52373657e-08, 0.889541507, -9.25003008e-09, 0.456854314)},
-}
+makeButton(telePage, "Main City", 2, function()
+    local char = player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        char.HumanoidRootPart.CFrame = CFrame.new(-576.270142, 4.1662488, 410.038574, -0.998445749, -5.50801449e-09, 0.0557322279, -4.12241367e-13, 1, 9.88225892e-08, -0.0557322279, 9.86689699e-08, -0.998445749)
+    end
+end)
 
-for i, tp in ipairs(teleports) do
-    makeButton(teleTab, tp.name, C.Accent, C.AccentHover, i, function()
-        local char = player.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            char.HumanoidRootPart.CFrame = tp.cf
-        end
-    end)
-end
+makeButton(telePage, "Snow City", 3, function()
+    local char = player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        char.HumanoidRootPart.CFrame = CFrame.new(-488.590027, 4.1662488, 2301.04224, -0.499920726, 1.05356229e-07, -0.866071165, -2.12529863e-12, 1, 1.21649691e-07, 0.866071165, 6.08170438e-08, -0.499920726)
+    end
+end)
+
+makeButton(telePage, "Magma City", 4, function()
+    local char = player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        char.HumanoidRootPart.CFrame = CFrame.new(2345.34839, 4.1662488, 4393.5, 0.228262901, 1.14109731e-07, 0.973599553, -6.69713807e-12, 1, -1.17202404e-07, -0.973599553, 2.67464397e-08, 0.228262901)
+    end
+end)
+
+makeButton(telePage, "Legends Speed Highway", 5, function()
+    local char = player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        char.HumanoidRootPart.CFrame = CFrame.new(3709.70703, 71.7461929, 5593.875, -0.0438015647, -1.0088355e-08, -0.999040246, -2.20692842e-14, 1, -1.00980451e-08, 0.999040246, -4.42288151e-10, -0.0438015647)
+    end
+end)
+
+makeButton(telePage, "Jungle Island City", 6, function()
+    local char = player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        char.HumanoidRootPart.CFrame = CFrame.new(1681.85168, 3.14525414, 12818.3633, 0.456854314, 6.8587525e-08, -0.889541507, -2.31062192e-08, 1, 6.52373657e-08, 0.889541507, -9.25003008e-09, 0.456854314)
+    end
+end)
 
 -- ========== TAB 4: EXTRA ==========
-local extraTab = tabFrames["Extra"]
+local extraPage = tabPages["Extra"]
 
-makeSection(extraTab, "-- Info", 0)
+makeSection(extraPage, "Info", 1)
 
-new("TextLabel", {
-    Text = "Legends of Speed", Size = UDim2.new(1, 0, 0, 28),
-    BackgroundTransparency = 1, TextColor3 = C.Text, TextSize = 17,
-    Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = 1,
-}, extraTab)
+makeLabel(extraPage, "Legends of Speed - Sheitsa Hub V2", 2)
+makeLabel(extraPage, "Script by Sheitsa Dev Team.", 3)
 
-new("TextLabel", {
-    Text = "Sheitsa Hub V2", Size = UDim2.new(1, 0, 0, 22),
-    BackgroundTransparency = 1, TextColor3 = C.Accent, TextSize = 13.5,
-    Font = Enum.Font.GothamSemibold, TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = 2,
-}, extraTab)
-
-new("Frame", {Size = UDim2.new(1, 0, 0, 1), BackgroundColor3 = C.Border, BorderSizePixel = 0, LayoutOrder = 3}, extraTab)
-
-new("TextLabel", {
-    Text = "Script converted to custom UI.\nOriginal by Superior's Hub, revamped\nby Sheitsa Dev Team.", Size = UDim2.new(1, 0, 0, 50),
-    BackgroundTransparency = 1, TextColor3 = C.Sub, TextSize = 12,
-    Font = Enum.Font.Gotham, TextXAlignment = Enum.TextXAlignment.Left,
-    TextWrapped = true, LayoutOrder = 4,
-}, extraTab)
-
-new("Frame", {Size = UDim2.new(1, 0, 0, 12), BackgroundTransparency = 1, LayoutOrder = 5}, extraTab)
-
-local discWrap, discBtn = makeButton(extraTab, "Join our Discord", C.Discord, C.DiscordHover, 6, function()
+makeButton(extraPage, "Join our Discord", 4, function()
     pcall(setclipboard, DiscordLink)
-    discBtn.Text = "Link Copied!"
-    task.delay(2, function() discBtn.Text = "Join our Discord" end)
 end)
-for _, child in ipairs(discWrap:GetChildren()) do
-    if child:IsA("TextButton") then child.TextColor3 = C.White end
-end
 
--- ========== TAB SWITCHING ==========
-local function switchTab(name)
-    for n, frame in pairs(tabFrames) do
-        if n == name then
-            frame.Visible = true
-            frame.BackgroundTransparency = 0.5
-            tw(frame, {BackgroundTransparency = 0}, 0.2)
-        else
-            frame.Visible = false
-        end
+-- ========== CHARACTER DEATH CLEANUP ==========
+player.CharacterAdded:Connect(function()
+    for _, n in ipairs({"orbs", "steps", "gems", "hoops", "rebirths", "glitchPet"}) do
+        stopFarm(n)
     end
-    for n, btn in pairs(tabButtons) do
-        local active = (n == name)
-        tw(btn, {
-            BackgroundColor3 = active and C.TabActive or C.TabInactive,
-            TextColor3 = active and C.Black or C.Sub,
-        }, 0.25)
-    end
-end
+end)
 
-for name, btn in pairs(tabButtons) do
-    btn.MouseButton1Click:Connect(function() switchTab(name) end)
-end
+-- ========== DRAGGABLE TOGGLE BUTTON ==========
+local toggleGui = Instance.new("ScreenGui")
+toggleGui.Name = "LoS_Toggle"
+toggleGui.ResetOnSpawn = false
+toggleGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+toggleGui.Parent = CoreGui
 
--- ========== MINIMIZE / CLOSE + TOGGLE BUTTON ==========
-local mainVisible = true
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Name = "LS"
+toggleBtn.Size = UDim2.new(0, 44, 0, 44)
+toggleBtn.Position = UDim2.new(0.5, -22, 0, 14)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
+toggleBtn.Text = "LS"
+toggleBtn.TextColor3 = Color3.fromRGB(200, 200, 210)
+toggleBtn.TextSize = 13
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.BorderSizePixel = 0
+toggleBtn.AutoButtonColor = false
+toggleBtn.Parent = toggleGui
 
-local toggleGui = new("ScreenGui", {
-    Name = "LoS_Toggle",
-    ResetOnSpawn = false,
-    ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
-}, CoreGui)
+local tCorner = Instance.new("UICorner")
+tCorner.CornerRadius = UDim.new(0, 11)
+tCorner.Parent = toggleBtn
 
-local toggleBtn = new("TextButton", {
-    Size = UDim2.new(0, 44, 0, 44),
-    Position = UDim2.new(0.5, -22, 0, 14),
-    BackgroundColor3 = Color3.fromRGB(12, 12, 16),
-    Text = "",
-    BorderSizePixel = 0,
-    AutoButtonColor = false,
-    Visible = false,
-}, toggleGui)
-corner(toggleBtn, 11)
-local tStroke = Instance.new("UIStroke", toggleBtn)
+local tStroke = Instance.new("UIStroke")
 tStroke.Color = Color3.fromRGB(190, 190, 200)
 tStroke.Thickness = 1.5
+tStroke.Parent = toggleBtn
 
-local tIcon = new("TextLabel", toggleBtn)
-tIcon.Size = UDim2.new(1, 0, 1, 0)
-tIcon.Text = "LS"
-tIcon.TextSize = 13
-tIcon.BackgroundTransparency = 1
-tIcon.TextColor3 = Color3.fromRGB(200, 200, 210)
-tIcon.Font = Enum.Font.GothamBold
+-- Drag + Click toggle (5px threshold)
+local tbDrag = false
+local tbDragStart = Vector3.new(0, 0, 0)
+local tbStartPos = UDim2.new()
+local tbDidDrag = false
 
-local function hideMain()
-    mainVisible = false
-    tw(main, {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}, 0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
-    task.delay(0.3, function()
-        main.Visible = false
-        toggleBtn.Visible = true
-        tIcon.Text = "LS"
-        tStroke.Color = Color3.fromRGB(190, 190, 200)
-        toggleBtn.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
-    end)
-end
-
-local function showMain()
-    mainVisible = true
-    toggleBtn.Visible = false
-    main.Visible = true
-    main.Size = UDim2.new(0, 0, 0, 0)
-    main.BackgroundTransparency = 1
-    tw(main, {Size = UDim2.new(0, 420, 0, 500), BackgroundTransparency = 0.03}, 0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-end
-
-closeBtn.MouseButton1Click:Connect(hideMain)
-minBtn.MouseButton1Click:Connect(hideMain)
-
--- Drag + Click for toggle (5px threshold)
-local tbDrag, tbDragStart, tbStartPos, tbDidDrag
 toggleBtn.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        tbDrag = true; tbDidDrag = false
-        tbDragStart = input.Position; tbStartPos = toggleBtn.Position
+        tbDrag = true
+        tbDidDrag = false
+        tbDragStart = input.Position
+        tbStartPos = toggleBtn.Position
     end
 end)
+
 toggleBtn.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         if not tbDidDrag then
-            if mainVisible then hideMain() else showMain() end
+            gui.Enabled = not gui.Enabled
         end
         tbDrag = false
     end
 end)
+
 UIS.InputChanged:Connect(function(input)
     if tbDrag and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
         local d = input.Position - tbDragStart
-        if math.abs(d.X) > 5 or math.abs(d.Y) > 5 then tbDidDrag = true end
-        toggleBtn.Position = UDim2.new(tbStartPos.X.Scale, tbStartPos.X.Offset + d.X, tbStartPos.Y.Scale, tbStartPos.Y.Offset + d.Y)
+        if math.abs(d.X) > 5 or math.abs(d.Y) > 5 then
+            tbDidDrag = true
+        end
+        toggleBtn.Position = UDim2.new(
+            tbStartPos.X.Scale, tbStartPos.X.Offset + d.X,
+            tbStartPos.Y.Scale, tbStartPos.Y.Offset + d.Y
+        )
     end
 end)
 
--- Drag main frame
-local mDrag, mDragStart, mStartPos
-header.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        mDrag = true; mDragStart = input.Position; mStartPos = main.Position
-    end
-end)
-header.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        mDrag = false
-    end
-end)
-UIS.InputChanged:Connect(function(input)
-    if mDrag and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        local d = input.Position - mDragStart
-        main.Position = UDim2.new(mStartPos.X.Scale, mStartPos.X.Offset + d.X, mStartPos.Y.Scale, mStartPos.Y.Offset + d.Y)
-    end
-end)
-
--- Clean up on character death
-player.CharacterAdded:Connect(function()
-    stopFarm("orbs")
-    stopFarm("steps")
-    stopFarm("gems")
-    stopFarm("hoops")
-    stopFarm("rebirths")
-end)
-
-warn("[LoS Sheitsa Hub V2] >> Loaded!")
+warn("[LoS Sheitsa Hub V2] >> Loaded with Custom AMOLED UI!")
