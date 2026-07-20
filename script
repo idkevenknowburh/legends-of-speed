@@ -6,6 +6,8 @@
 -- ========== SERVICES ==========
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
 local RS = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
 local DiscordLink = "https://discord.gg/ZE6vyxgydK"
@@ -17,8 +19,19 @@ local function stopFarm(name)
     farmThreads[name] = false
 end
 
--- ========== FLUENT UI ==========
+-- ========== FLUENT UI (regular) ==========
+local guisBefore = {}
+for _, c in ipairs(CoreGui:GetChildren()) do guisBefore[c] = true end
+
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+
+local fluentGui = nil
+for _, c in ipairs(CoreGui:GetChildren()) do
+    if not guisBefore[c] and c:IsA("ScreenGui") then
+        fluentGui = c
+        break
+    end
+end
 
 local Window = Fluent:CreateWindow({
     Title       = "Legends of Speed | Sheitsa Hub V2",
@@ -28,9 +41,6 @@ local Window = Fluent:CreateWindow({
     Acrylic     = true,
     Theme       = "Amoled",
     MinimizeKey = Enum.KeyCode.RightControl,
-    ConfigurationSaving = {
-        Enabled = false,
-    },
 })
 
 local Tabs = {
@@ -360,4 +370,67 @@ Fluent:Notify({
     Duration = 4
 })
 
-warn("[LoS Sheitsa Hub V2] >> Loaded with Fluent-Modded UI!")
+-- ==========================================
+--  DRAGGABLE TOGGLE BUTTON
+-- ==========================================
+local toggleGui = Instance.new("ScreenGui")
+toggleGui.Name = "LoSSheitsaToggle"
+toggleGui.ResetOnSpawn = false
+toggleGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+toggleGui.Parent = CoreGui
+
+local hubVisible = true
+
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 44, 0, 44)
+toggleBtn.Position = UDim2.new(0.5, -22, 0, 14)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
+toggleBtn.Text = ""
+toggleBtn.BorderSizePixel = 0
+toggleBtn.AutoButtonColor = false
+toggleBtn.Parent = toggleGui
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0, 11)
+
+local tStroke = Instance.new("UIStroke", toggleBtn)
+tStroke.Color = Color3.fromRGB(190, 190, 200)
+tStroke.Thickness = 1.5
+
+local tLabel = Instance.new("TextLabel", toggleBtn)
+tLabel.Size = UDim2.new(1, 0, 1, 0)
+tLabel.Text = "LoS"
+tLabel.TextSize = 12
+tLabel.BackgroundTransparency = 1
+tLabel.TextColor3 = Color3.fromRGB(200, 200, 210)
+tLabel.Font = Enum.Font.GothamBold
+
+-- Drag + Click (with 5px drag threshold)
+local htDrag, htDragStart, htStartPos, htDidDrag
+toggleBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        htDrag = true; htDidDrag = false
+        htDragStart = input.Position; htStartPos = toggleBtn.Position
+    end
+end)
+toggleBtn.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        if not htDidDrag then
+            hubVisible = not hubVisible
+            if fluentGui and fluentGui.Parent then
+                fluentGui.Enabled = hubVisible
+            end
+            tLabel.Text = hubVisible and "LoS" or "--"
+            tStroke.Color = hubVisible and Color3.fromRGB(190, 190, 200) or Color3.fromRGB(80, 80, 90)
+            toggleBtn.BackgroundColor3 = hubVisible and Color3.fromRGB(12, 12, 16) or Color3.fromRGB(30, 30, 36)
+        end
+        htDrag = false
+    end
+end)
+UIS.InputChanged:Connect(function(input)
+    if htDrag and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local d = input.Position - htDragStart
+        if math.abs(d.X) > 5 or math.abs(d.Y) > 5 then htDidDrag = true end
+        toggleBtn.Position = UDim2.new(htStartPos.X.Scale, htStartPos.X.Offset + d.X, htStartPos.Y.Scale, htStartPos.Y.Offset + d.Y)
+    end
+end)
+
+warn("[LoS Sheitsa Hub V2] >> Loaded with Fluent UI!")
