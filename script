@@ -1,6 +1,6 @@
 -- ============================================
 -- Legends of Speed | Sheitsa Hub V2
--- UI: Fluent by dawid-scripts
+-- UI: Rayfield by Sirius
 -- ============================================
 
 -- ========== SERVICES ==========
@@ -19,47 +19,36 @@ local function stopFarm(name)
     farmThreads[name] = false
 end
 
--- ========== FLUENT UI (regular) ==========
-local guisBefore = {}
-for _, c in ipairs(CoreGui:GetChildren()) do guisBefore[c] = true end
+-- ========== RAYFIELD UI ==========
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
-local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
-
-local fluentGui = nil
-for _, c in ipairs(CoreGui:GetChildren()) do
-    if not guisBefore[c] and c:IsA("ScreenGui") then
-        fluentGui = c
-        break
-    end
-end
-
-local Window = Fluent:CreateWindow({
-    Title       = "Legends of Speed | Sheitsa Hub V2",
-    SubTitle    = "by Sheitsa",
-    TabWidth    = 120,
-    Size        = UDim2.fromOffset(550, 420),
-    Acrylic     = true,
-    Theme       = "Amoled",
-    MinimizeKey = Enum.KeyCode.RightControl,
+local Window = Rayfield:CreateWindow({
+    Name = "Legends of Speed | Sheitsa Hub V2",
+    Icon = 0,
+    LoadingTitle = "Legends of Speed",
+    LoadingSubtitle = "by Sheitsa",
+    Theme = "Light",
+    ToggleUIKeybind = Enum.KeyCode.RightControl,
+    ConfigurationSaving = {Enabled = false},
+    DisableRayfieldPrompts = true,
 })
 
-local Tabs = {
-    Home      = Window:AddTab({ Title = "Home",      Icon = "home" }),
-    Pets      = Window:AddTab({ Title = "Pets",      Icon = "sparkles" }),
-    Teleports = Window:AddTab({ Title = "Teleports", Icon = "map-pin" }),
-    Credits   = Window:AddTab({ Title = "Credits",   Icon = "heart" }),
+local Tab = {
+    Home      = Window:CreateTab({Name = "Home",      Icon = "home"}),
+    Pets      = Window:CreateTab({Name = "Pets",      Icon = "sparkles"}),
+    Teleports = Window:CreateTab({Name = "Teleports", Icon = "map-pin"}),
+    Credits   = Window:CreateTab({Name = "Credits",   Icon = "heart"}),
 }
 
 -- ==========================================
 --  HOME TAB (Auto-Farm)
 -- ==========================================
-Tabs.Home:AddSection("Auto-Farm")
+Tab.Home:CreateSection({Name = "Auto-Farm"})
 
-Tabs.Home:AddToggle({
-    Title       = "Auto Orbs",
-    Description = "Collects all orbs in the city",
-    Default     = false,
-    Callback    = function(on)
+Tab.Home:CreateToggle({
+    Name = "Auto Orbs",
+    CurrentValue = false,
+    Callback = function(on)
         stopFarm("orbs")
         if on then
             farmThreads["orbs"] = true
@@ -86,14 +75,13 @@ Tabs.Home:AddToggle({
                 end
             end)
         end
-    end
+    end,
 })
 
-Tabs.Home:AddToggle({
-    Title       = "Auto Steps",
-    Description = "Fires orb event for steps every 0.5s",
-    Default     = false,
-    Callback    = function(on)
+Tab.Home:CreateToggle({
+    Name = "Auto Steps",
+    CurrentValue = false,
+    Callback = function(on)
         stopFarm("steps")
         if on then
             farmThreads["steps"] = true
@@ -110,14 +98,13 @@ Tabs.Home:AddToggle({
                 end
             end)
         end
-    end
+    end,
 })
 
-Tabs.Home:AddToggle({
-    Title       = "Auto Rebirths",
-    Description = "Requests rebirth every 5 seconds",
-    Default     = false,
-    Callback    = function(on)
+Tab.Home:CreateToggle({
+    Name = "Auto Rebirths",
+    CurrentValue = false,
+    Callback = function(on)
         stopFarm("rebirths")
         if on then
             farmThreads["rebirths"] = true
@@ -134,14 +121,13 @@ Tabs.Home:AddToggle({
                 end
             end)
         end
-    end
+    end,
 })
 
-Tabs.Home:AddToggle({
-    Title       = "Auto Gems",
-    Description = "Collects all gems in the city",
-    Default     = false,
-    Callback    = function(on)
+Tab.Home:CreateToggle({
+    Name = "Auto Gems",
+    CurrentValue = false,
+    Callback = function(on)
         stopFarm("gems")
         if on then
             farmThreads["gems"] = true
@@ -168,14 +154,13 @@ Tabs.Home:AddToggle({
                 end
             end)
         end
-    end
+    end,
 })
 
-Tabs.Home:AddToggle({
-    Title       = "Auto Hoops",
-    Description = "Teleports all hoops to your position",
-    Default     = false,
-    Callback    = function(on)
+Tab.Home:CreateToggle({
+    Name = "Auto Hoops",
+    CurrentValue = false,
+    Callback = function(on)
         stopFarm("hoops")
         if on then
             farmThreads["hoops"] = true
@@ -199,19 +184,18 @@ Tabs.Home:AddToggle({
                 end
             end)
         end
-    end
+    end,
 })
 
 -- ==========================================
 --  PETS TAB
 -- ==========================================
-Tabs.Pets:AddSection("OP Pets")
+Tab.Pets:CreateSection({Name = "OP Pets"})
 
-Tabs.Pets:AddToggle({
-    Title       = "Inf Glitch Pet",
-    Description = "Spams rebirths + yellow orbs for infinite pets",
-    Default     = false,
-    Callback    = function(on)
+Tab.Pets:CreateToggle({
+    Name = "Inf Glitch Pet",
+    CurrentValue = false,
+    Callback = function(on)
         stopFarm("glitchPet")
         if on then
             farmThreads["glitchPet"] = true
@@ -250,13 +234,12 @@ Tabs.Pets:AddToggle({
                 end
             end)
         end
-    end
+    end,
 })
 
-Tabs.Pets:AddButton({
-    Title       = "Unlock Swift Samurai",
-    Description = "Unlocks Swift Samurai pet",
-    Callback    = function()
+Tab.Pets:CreateButton({
+    Name = "Unlock Swift Samurai",
+    Callback = function()
         local petShop = RS:FindFirstChild("cPetShopFolder")
         local petShopRemote = RS:FindFirstChild("cPetShopRemote")
         if petShop and petShopRemote then
@@ -265,91 +248,85 @@ Tabs.Pets:AddButton({
                 petShopRemote:InvokeServer(swiftSamurai)
             end
         end
-    end
+    end,
 })
 
 -- ==========================================
 --  TELEPORTS TAB
 -- ==========================================
-Tabs.Teleports:AddSection("Islands")
+Tab.Teleports:CreateSection({Name = "Islands"})
 
-Tabs.Teleports:AddButton({
-    Title       = "Main City",
-    Description = "Teleport to the main city",
-    Callback    = function()
+Tab.Teleports:CreateButton({
+    Name = "Main City",
+    Callback = function()
         local char = player.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
             char.HumanoidRootPart.CFrame = CFrame.new(-576.270142, 4.1662488, 410.038574, -0.998445749, -5.50801449e-09, 0.0557322279, -4.12241367e-13, 1, 9.88225892e-08, -0.0557322279, 9.86689699e-08, -0.998445749)
         end
-    end
+    end,
 })
 
-Tabs.Teleports:AddButton({
-    Title       = "Snow City",
-    Description = "Teleport to Snow City",
-    Callback    = function()
+Tab.Teleports:CreateButton({
+    Name = "Snow City",
+    Callback = function()
         local char = player.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
             char.HumanoidRootPart.CFrame = CFrame.new(-488.590027, 4.1662488, 2301.04224, -0.499920726, 1.05356229e-07, -0.866071165, -2.12529863e-12, 1, 1.21649691e-07, 0.866071165, 6.08170438e-08, -0.499920726)
         end
-    end
+    end,
 })
 
-Tabs.Teleports:AddButton({
-    Title       = "Magma City",
-    Description = "Teleport to Magma City",
-    Callback    = function()
+Tab.Teleports:CreateButton({
+    Name = "Magma City",
+    Callback = function()
         local char = player.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
             char.HumanoidRootPart.CFrame = CFrame.new(2345.34839, 4.1662488, 4393.5, 0.228262901, 1.14109731e-07, 0.973599553, -6.69713807e-12, 1, -1.17202404e-07, -0.973599553, 2.67464397e-08, 0.228262901)
         end
-    end
+    end,
 })
 
-Tabs.Teleports:AddButton({
-    Title       = "Legends Speed Highway",
-    Description = "Teleport to Legends Speed Highway",
-    Callback    = function()
+Tab.Teleports:CreateButton({
+    Name = "Legends Speed Highway",
+    Callback = function()
         local char = player.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
             char.HumanoidRootPart.CFrame = CFrame.new(3709.70703, 71.7461929, 5593.875, -0.0438015647, -1.0088355e-08, -0.999040246, -2.20692842e-14, 1, -1.00980451e-08, 0.999040246, -4.42288151e-10, -0.0438015647)
         end
-    end
+    end,
 })
 
-Tabs.Teleports:AddButton({
-    Title       = "Jungle Island City",
-    Description = "Teleport to Jungle Island City",
-    Callback    = function()
+Tab.Teleports:CreateButton({
+    Name = "Jungle Island City",
+    Callback = function()
         local char = player.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
             char.HumanoidRootPart.CFrame = CFrame.new(1681.85168, 3.14525414, 12818.3633, 0.456854314, 6.8587525e-08, -0.889541507, -2.31062192e-08, 1, 6.52373698e-08, 0.889541507, -9.25003008e-09, 0.456854314)
         end
-    end
+    end,
 })
 
 -- ==========================================
 --  CREDITS TAB
 -- ==========================================
-Tabs.Credits:AddParagraph({
-    Title   = "Legends of Speed",
+Tab.Credits:CreateParagraph({
+    Title = "Legends of Speed",
     Content = "Sheitsa Hub V2\nScript by Sheitsa Dev Team.",
 })
 
-Tabs.Credits:AddParagraph({
-    Title   = "UI Library",
-    Content = "Fluent by dawid-scripts\nhttps://github.com/dawid-scripts/Fluent",
+Tab.Credits:CreateParagraph({
+    Title = "UI Library",
+    Content = "Rayfield by Sirius\nhttps://sirius.menu",
 })
 
-Tabs.Credits:AddSection("Social")
+Tab.Credits:CreateSection({Name = "Social"})
 
-Tabs.Credits:AddButton({
-    Title       = "Join our Discord",
-    Description = "Copies the Discord invite link",
-    Callback    = function()
+Tab.Credits:CreateButton({
+    Name = "Join our Discord",
+    Callback = function()
         pcall(setclipboard, DiscordLink)
-        Fluent:Notify({ Title = "LoS", Content = "Discord link copied!", Duration = 3 })
-    end
+        Rayfield:Notify({Title = "LoS", Content = "Discord link copied!", Duration = 3})
+    end,
 })
 
 -- ==========================================
@@ -364,10 +341,10 @@ end)
 -- ==========================================
 --  STARTUP NOTIFICATION
 -- ==========================================
-Fluent:Notify({
-    Title   = "Legends of Speed | Sheitsa Hub V2",
-    Content = "Script loaded! Press RightControl to minimize.",
-    Duration = 4
+Rayfield:Notify({
+    Title = "Legends of Speed | Sheitsa Hub V2",
+    Content = "Script loaded! Press RightControl to toggle UI.",
+    Duration = 4,
 })
 
 -- ==========================================
@@ -415,9 +392,7 @@ toggleBtn.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         if not htDidDrag then
             hubVisible = not hubVisible
-            if fluentGui and fluentGui.Parent then
-                fluentGui.Enabled = hubVisible
-            end
+            Rayfield:SetVisibility(hubVisible)
             tLabel.Text = hubVisible and "LoS" or "--"
             tStroke.Color = hubVisible and Color3.fromRGB(190, 190, 200) or Color3.fromRGB(80, 80, 90)
             toggleBtn.BackgroundColor3 = hubVisible and Color3.fromRGB(12, 12, 16) or Color3.fromRGB(30, 30, 36)
@@ -433,4 +408,4 @@ UIS.InputChanged:Connect(function(input)
     end
 end)
 
-warn("[LoS Sheitsa Hub V2] >> Loaded with Fluent UI!")
+warn("[LoS Sheitsa Hub V2] >> Loaded with Rayfield UI!")
