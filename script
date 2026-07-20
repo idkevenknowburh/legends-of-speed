@@ -34,16 +34,16 @@ local Window = Rayfield:CreateWindow({
 })
 
 local Tab = {
-    Home      = Window:CreateTab({Name = "Home",      Icon = "home"}),
-    Pets      = Window:CreateTab({Name = "Pets",      Icon = "sparkles"}),
-    Teleports = Window:CreateTab({Name = "Teleports", Icon = "map-pin"}),
-    Credits   = Window:CreateTab({Name = "Credits",   Icon = "heart"}),
+    Home      = Window:CreateTab("Home", "home"),
+    Pets      = Window:CreateTab("Pets", "sparkles"),
+    Teleports = Window:CreateTab("Teleports", "map-pin"),
+    Credits   = Window:CreateTab("Credits", "heart"),
 }
 
 -- ==========================================
 --  HOME TAB (Auto-Farm)
 -- ==========================================
-Tab.Home:CreateSection({Name = "Auto-Farm"})
+Tab.Home:CreateSection("Auto-Farm")
 
 Tab.Home:CreateToggle({
     Name = "Auto Orbs",
@@ -190,7 +190,7 @@ Tab.Home:CreateToggle({
 -- ==========================================
 --  PETS TAB
 -- ==========================================
-Tab.Pets:CreateSection({Name = "OP Pets"})
+Tab.Pets:CreateSection("OP Pets")
 
 Tab.Pets:CreateToggle({
     Name = "Inf Glitch Pet",
@@ -254,7 +254,7 @@ Tab.Pets:CreateButton({
 -- ==========================================
 --  TELEPORTS TAB
 -- ==========================================
-Tab.Teleports:CreateSection({Name = "Islands"})
+Tab.Teleports:CreateSection("Islands")
 
 Tab.Teleports:CreateButton({
     Name = "Main City",
@@ -319,7 +319,7 @@ Tab.Credits:CreateParagraph({
     Content = "Rayfield by Sirius\nhttps://sirius.menu",
 })
 
-Tab.Credits:CreateSection({Name = "Social"})
+Tab.Credits:CreateSection("Social")
 
 Tab.Credits:CreateButton({
     Name = "Join our Discord",
